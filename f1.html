@@ -1,0 +1,2323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>搭配Tst</title>
+    <style>
+        /* === 模块化样式 === */
+        
+        :root { 
+            --primary-color: #000; 
+            --bg-color: #f2f3f5; 
+            --nav-height: 60px; 
+        }
+        
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            -webkit-tap-highlight-color: transparent; 
+            outline: none; 
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, sans-serif; 
+            background-color: #e0e0e0; 
+            display: flex; 
+            justify-content: center; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
+        
+        #app-container { 
+            width: 100%; 
+            max-width: 480px; 
+            height: 100%; 
+            background-color: var(--bg-color); 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            box-shadow: 0 0 30px rgba(0,0,0,0.05); 
+        }
+        
+        ::-webkit-scrollbar { 
+            display: none; 
+        }
+        
+        .page-content { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding-bottom: var(--nav-height); 
+            display: none; 
+        }
+        
+        .page-content.active { 
+            display: block; 
+            animation: fadeIn 0.4s ease; 
+        }
+        
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(5px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* 动画模块 */
+        @keyframes popScale { 
+            0% { transform: scale(1); } 
+            50% { transform: scale(0.9); } 
+            100% { transform: scale(1); } 
+        }
+        
+        .anim-click { 
+            animation: popScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        
+        @keyframes fadeInUp { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        .stagger-item { 
+            opacity: 0; 
+            animation: fadeInUp 0.5s ease forwards; 
+        }
+
+        /* 首页组件样式模块 */
+        .weather-widget { 
+            background: rgba(255, 255, 255, 0.6); 
+            backdrop-filter: blur(10px); 
+            -webkit-backdrop-filter: blur(10px); 
+            margin: 10px 20px 20px 20px; 
+            padding: 20px; 
+            border-radius: 20px; 
+            border: 1px solid rgba(255, 255, 255, 0.5); 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            color: #333; 
+        }
+        
+        .w-left { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+        }
+        
+        .w-icon-box { 
+            width: 40px; 
+            height: 40px; 
+            color: #333; 
+        }
+        
+        .w-temp { 
+            font-size: 36px; 
+            font-weight: 300; 
+            letter-spacing: -1px; 
+            line-height: 1; 
+        }
+        
+        .w-right { 
+            text-align: right; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            max-width: 60%; 
+        }
+        
+        .w-location { 
+            font-size: 14px; 
+            font-weight: 600; 
+            margin-bottom: 4px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-end; 
+            gap: 4px; 
+        }
+        
+        .w-desc { 
+            font-size: 12px; 
+            color: #666; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+        }
+
+        .style-nav-wrapper { 
+            overflow-x: auto; 
+            white-space: nowrap; 
+            padding: 0 20px; 
+            margin-bottom: 20px; 
+        }
+        
+        .style-pill { 
+            display: inline-block; 
+            padding: 8px 18px; 
+            background: rgba(255,255,255,0.7); 
+            border-radius: 30px; 
+            margin-right: 10px; 
+            font-size: 13px; 
+            color: #666; 
+            transition: all 0.3s ease; 
+            border: 1px solid rgba(0,0,0,0.05); 
+            cursor: pointer; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .style-pill.active { 
+            background: #000; 
+            color: white; 
+            border-color: #000; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15); 
+        }
+
+        .recommendation-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px; 
+            padding: 0 20px 20px 20px; 
+        }
+        
+        .card { 
+            background: white; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03); 
+            border: none;
+        }
+        
+        .card-img { 
+            width: 100%; 
+            height: 220px; 
+            object-fit: cover; 
+        }
+        
+        .card-info { 
+            padding: 12px; 
+            font-size: 13px; 
+            font-weight: 600; 
+            color: #333; 
+        }
+        
+        /* 刷新按钮样式 - 底部居中 */
+        .refresh-btn {
+            position: absolute;
+            bottom: 80px; /* 在底部导航上方 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            background: #000;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            transform: translateX(-50%) rotate(90deg);
+            background: #333;
+        }
+        
+        .refresh-btn:active {
+            transform: translateX(-50%) scale(0.9);
+        }
+
+        /* 圈子组件样式模块 */
+        .feed-list { 
+            padding: 0 15px 15px 15px; 
+        }
+        
+        .post-item { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02); 
+        }
+        
+        .post-header { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 10px; 
+        }
+        
+        .fab-btn { 
+            position: absolute; 
+            bottom: 80px; 
+            right: 20px; 
+            width: 56px; 
+            height: 56px; 
+            background: #000; 
+            color: white; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 30px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+            z-index: 50; 
+            transition: transform 0.2s;
+        }
+        
+        .fab-btn:active { 
+            transform: scale(0.9); 
+        }
+
+        /* 用户页组件样式模块 */
+        .profile-header { 
+            background: white; 
+            padding: 40px 20px 30px 20px; 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 10px; 
+        }
+        
+        .profile-avatar { 
+            width: 70px; 
+            height: 70px; 
+            border-radius: 50%; 
+            background: #333; 
+            margin-right: 20px; 
+        }
+        
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            background: white; 
+            padding: 20px 10px; 
+            margin-bottom: 10px; 
+        }
+        
+        .stat-item { 
+            cursor: pointer; 
+            position: relative; 
+        }
+        
+        /* 编辑状态样式 */
+        .stat-input { 
+            width: 100%; 
+            font-size: 18px; 
+            font-weight: bold; 
+            text-align: center; 
+            border: none; 
+            border-bottom: 2px solid #000; 
+            background: transparent; 
+            padding: 0; 
+            margin-bottom: 4px; 
+            color: #000; 
+            border-radius: 0; 
+            -webkit-appearance: none; /* 移除iOS默认圆角和Select样式 */
+        }
+        
+        /* 下拉菜单特别样式 */
+        select.stat-input {
+            text-align-last: center; /* 让下拉文字居中 */
+        }
+
+        .stat-item h3 { 
+            font-size: 18px; 
+            margin-bottom: 4px; 
+            color: #000; 
+            min-height: 25px;
+        }
+        
+        .stat-item p { 
+            font-size: 12px; 
+            color: #888; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 2px;
+        }
+        
+        .edit-icon { 
+            opacity: 0.3; 
+            font-size: 10px; 
+            transition: opacity 0.2s; 
+        }
+        
+        .stat-item:hover .edit-icon { 
+            opacity: 1; 
+        }
+
+        .profile-tabs { 
+            display: flex; 
+            background: white; 
+            border-bottom: 1px solid #f0f0f0; 
+        }
+        
+        .p-tab { 
+            flex: 1; 
+            text-align: center; 
+            padding: 15px 0; 
+            font-size: 14px; 
+            cursor: pointer; 
+            color: #999; 
+            position: relative; 
+            transition: color 0.3s;
+        }
+        
+        .p-tab.active { 
+            font-weight: bold; 
+            color: #000; 
+        }
+        
+        .p-tab.active::after { 
+            content:''; 
+            position: absolute; 
+            bottom: 0; 
+            left: 35%; 
+            width: 30%; 
+            height: 3px; 
+            background: #000; 
+            border-radius: 3px 3px 0 0; 
+            transition: all 0.3s;
+        }
+        
+        .upload-filter-bar { 
+            display: none; 
+            background: white; 
+            padding: 10px 15px; 
+            overflow-x: auto; 
+            white-space: nowrap; 
+            border-bottom: 1px solid #eee; 
+        }
+        
+        .filter-pills-container {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .user-gallery { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 2px; 
+            padding-bottom: 20px; 
+            background: white; 
+            min-height: 300px; 
+        }
+        
+        .gallery-item { 
+            aspect-ratio: 1/1; 
+            background-color: #e0e0e0; 
+            display: flex; 
+            align-items: flex-end; 
+            justify-content: center; 
+            padding-bottom: 5px; 
+            position: relative;
+        }
+        
+        .item-tag { 
+            font-size: 10px; 
+            background: rgba(255,255,255,0.8); 
+            color: #000; 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            backdrop-filter: blur(2px); 
+            z-index: 1;
+        }
+        
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .gallery-item:hover .delete-btn {
+            opacity: 1;
+        }
+        
+        .user-gallery.history-mode { 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 10px; 
+            padding: 10px; 
+        }
+        
+        .user-gallery.history-mode .gallery-item { 
+            aspect-ratio: 3/4; 
+            border-radius: 8px; 
+        }
+
+        /* 底部导航样式模块 */
+        .bottom-nav { 
+            height: var(--nav-height); 
+            background: rgba(255,255,255,0.95); 
+            backdrop-filter: blur(5px); 
+            border-top: 1px solid rgba(0,0,0,0.05); 
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center; 
+            position: absolute; 
+            bottom: 0; 
+            width: 100%; 
+            z-index: 100; 
+            padding-bottom: 5px; 
+        }
+        
+        .nav-item { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 10px; 
+            color: #aaa; 
+            flex: 1; 
+            height: 100%; 
+            transition: color 0.3s; 
+        }
+        
+        .nav-icon { 
+            width: 24px; 
+            height: 24px; 
+        }
+        
+        .nav-icon svg { 
+            width: 100%; 
+            height: 100%; 
+            stroke: currentColor; 
+            stroke-width: 1.5; 
+            stroke-linecap: round; 
+            stroke-linejoin: round; 
+            fill: none; 
+            transition: all 0.3s; 
+        }
+        
+        .nav-item.active { 
+            color: #000; 
+        } 
+        
+        .nav-item.active .nav-icon svg { 
+            stroke-width: 2; 
+            transform: translateY(-2px); 
+        }
+        
+        /* 上传界面样式 */
+        .upload-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .upload-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .upload-modal-content {
+            background: white;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .upload-modal.active .upload-modal-content {
+            transform: translateY(0);
+        }
+        
+        .upload-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .upload-type-selector {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .upload-type-btn {
+            flex: 1;
+            padding: 10px;
+            margin: 0 5px 5px 5px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .upload-type-btn.active {
+            border-color: #000;
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+        
+        .upload-image-preview {
+            width: 100%;
+            height: 200px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .upload-image-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+        
+        .upload-image-preview .placeholder {
+            color: #aaa;
+            font-size: 14px;
+        }
+        
+        .upload-name-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .upload-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .upload-action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .upload-cancel-btn {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .upload-submit-btn {
+            background: #000;
+            color: white;
+        }
+        
+        .upload-action-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .upload-image-input {
+            display: none;
+        }
+        
+        /* 标签输入样式 */
+        .tags-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .tags-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .tag-item {
+            background: #e0e0e0;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .tag-remove {
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        /* 搭配上传样式 */
+        .outfit-items-list {
+            margin: 15px 0;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .outfit-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .outfit-item:last-child {
+            border-bottom: none;
+        }
+        
+        .outfit-item-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            margin-right: 10px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .outfit-item-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
+        .outfit-item-name {
+            flex: 1;
+        }
+        
+        .outfit-item-remove {
+            color: #ff6b6b;
+            cursor: pointer;
+        }
+        
+        .outfit-item-placeholder {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+        
+        /* 导入购物车样式 */
+        .import-cart-section {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .import-cart-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .import-cart-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .cart-items-list {
+            max-height: 100px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .cart-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+        
+        /* 自定义标签输入样式 */
+        .custom-tag-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .add-tag-btn {
+            background: #000;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        /* 确认删除弹窗样式 */
+        .confirm-delete-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .confirm-delete-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .confirm-delete-content {
+            background: white;
+            width: 80%;
+            max-width: 300px;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .confirm-delete-modal.active .confirm-delete-content {
+            transform: translateY(0);
+        }
+        
+        .confirm-delete-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .confirm-delete-message {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .confirm-delete-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .confirm-delete-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .confirm-cancel-btn {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .confirm-delete-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .confirm-delete-action-btn {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        /* 圈子互动元素样式 */
+        .post-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .action-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 20px;
+            transition: all 0.2s;
+        }
+        
+        .action-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .action-icon {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .action-text {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .action-item.liked .action-icon {
+            color: #e74c3c;
+        }
+        
+        .action-item.liked .action-text {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        
+        <!-- 首页模块 -->
+        <div id="page-home" class="page-content active">
+            <div class="refresh-btn" onclick="App.home.refreshRecommendations()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6"></path>
+                    <path d="M22 11.5A10 10 0 0 0 8.5 2 10 10 0 0 0 2 8.5 10 10 0 0 0 12 22a10 10 0 0 0 10-10.5z"></path>
+                </svg>
+            </div>
+            
+            <div class="weather-widget">
+                <div class="w-left">
+                    <div class="w-icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    </div>
+                    <div class="w-temp">--°</div>
+                </div>
+                <div class="w-right">
+                    <div class="w-location">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        定位中
+                    </div>
+                    <div class="w-desc">获取穿搭建议...</div>
+                </div>
+            </div>
+
+            <div class="style-nav-wrapper">
+                <span class="style-pill active" onclick="App.animButton(this); App.filterHomeStyle('recommend', this)">推荐</span>
+                <span class="style-pill" onclick="App.animButton(this); App.filterHomeStyle('japanese', this)">日系</span>
+                <span class="style-pill" onclick="App.animButton(this); App.filterHomeStyle('amekaji', this)">阿美咔叽</span>
+                <span class="style-pill" onclick="App.animButton(this); App.filterHomeStyle('street', this)">高街</span>
+            </div>
+            <div class="recommendation-grid" id="outfit-grid"></div>
+        </div>
+
+        <!-- 圈子模块 -->
+        <div id="page-community" class="page-content">
+            <div class="refresh-btn" onclick="App.community.refreshCommunity()" style="bottom: 100px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6"></path>
+                    <path d="M22 11.5A10 10 0 0 0 8.5 2 10 10 0 0 0 2 8.5 10 10 0 0 0 12 22a10 10 0 0 0 10-10.5z"></path>
+                </svg>
+            </div>
+            <div class="feed-list" id="community-feed"></div>
+            <div class="fab-btn" onclick="App.showOutfitUploadModal()">+</div>
+        </div>
+
+        <!-- 用户模块 -->
+        <div id="page-profile" class="page-content">
+            <div class="profile-header">
+                <div class="profile-avatar"></div>
+                <div>
+                    <h2 style="font-size:20px;">User_9527</h2>
+                    <p style="color:#888; font-size:12px; margin-top:5px;">ID: 884823</p>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <!-- 身高 (数字) -->
+                <div class="stat-item" onclick="App.startEdit('height')">
+                    <h3 id="val-height">180</h3>
+                    <p>身高(cm) <span class="edit-icon">✎</span></p>
+                </div>
+                <!-- 体重 (数字) -->
+                <div class="stat-item" onclick="App.startEdit('weight')">
+                    <h3 id="val-weight">70</h3>
+                    <p>体重(kg) <span class="edit-icon">✎</span></p>
+                </div>
+                <!-- 年龄 (数字) -->
+                <div class="stat-item" onclick="App.startEdit('age')">
+                    <h3 id="val-age">24</h3>
+                    <p>年龄 <span class="edit-icon">✎</span></p>
+                </div>
+                <!-- 性别 (下拉选择) -->
+                <div class="stat-item" onclick="App.startEdit('gender')">
+                    <h3 id="val-gender">男</h3>
+                    <p>性别 <span class="edit-icon">✎</span></p>
+                </div>
+            </div>
+
+            <div class="profile-tabs">
+                <div class="p-tab active" onclick="App.switchProfileTab('wardrobe', this)">衣橱</div>
+                <div class="p-tab" onclick="App.switchProfileTab('outfits', this)">我的搭配</div>
+                <div class="p-tab" onclick="App.switchProfileTab('favorites', this)">我的收藏</div>
+            </div>
+
+            <div id="wardrobe-sub-filters" class="upload-filter-bar">
+                <div class="filter-pills-container" id="wardrobeFiltersContainer">
+                    <span class="style-pill active" onclick="App.animButton(this); App.filterWardrobe('all', this)">全部</span>
+                </div>
+            </div>
+
+            <div class="user-gallery" id="profile-gallery"></div>
+            
+            <!-- 衣橱添加按钮 - 与圈子按钮使用相同类名 -->
+            <div class="fab-btn" onclick="App.showWardrobeUploadModal()" style="display: none;" id="wardrobeAddBtn">+</div>
+        </div>
+
+        <!-- 底部导航模块 -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="App.switchNav('home', this)">
+                <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div>
+                <span>首页</span>
+            </div>
+            <div class="nav-item" onclick="App.switchNav('community', this)">
+                <div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg></div>
+                <span>圈子</span>
+            </div>
+            <div class="nav-item" onclick="App.switchNav('profile', this)">
+                <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+                <span>用户</span>
+            </div>
+        </div>
+        
+        <!-- 上传衣物模态框 -->
+        <div class="upload-modal" id="wardrobeUploadModal">
+            <div class="upload-modal-content">
+                <div class="upload-title">添加到衣橱</div>
+                
+                <div class="import-cart-section">
+                    <div class="import-cart-title">
+                        <span>购物车导入</span>
+                        <button class="import-cart-btn" onclick="App.importFromCart()">导入购物车</button>
+                    </div>
+                    <div class="cart-items-list" id="cartItemsList">
+                        <div class="cart-item-placeholder">暂无购物车物品</div>
+                    </div>
+                </div>
+                
+                <div class="upload-image-preview" id="wardrobeImagePreview">
+                    <div class="placeholder">点击选择图片</div>
+                </div>
+                <input type="file" id="wardrobeImageInput" class="upload-image-input" accept="image/*" onchange="App.handleWardrobeImageUpload(event)">
+                
+                <input type="text" class="upload-name-input" id="wardrobeNameInput" placeholder="请输入物品名称">
+                
+                <input type="text" class="custom-tag-input" id="customTagInput" placeholder="输入自定义标签（如：上装、下装、裙装等）">
+                <button class="add-tag-btn" onclick="App.addCustomTag()">添加标签</button>
+                
+                <div class="tags-list" id="wardrobeTagsList"></div>
+                
+                <div class="upload-actions">
+                    <button class="upload-action-btn upload-cancel-btn" onclick="App.hideWardrobeUploadModal()">取消</button>
+                    <button class="upload-action-btn upload-submit-btn" onclick="App.submitWardrobeItem()">添加</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 上传搭配模态框 -->
+        <div class="upload-modal" id="outfitUploadModal">
+            <div class="upload-modal-content">
+                <div class="upload-title">上传搭配</div>
+                
+                <div class="upload-image-preview" id="outfitImagePreview">
+                    <div class="placeholder">点击选择搭配图片</div>
+                </div>
+                <input type="file" id="outfitImageInput" class="upload-image-input" accept="image/*" onchange="App.handleOutfitImageUpload(event)">
+                
+                <input type="text" class="upload-name-input" id="outfitNameInput" placeholder="请输入搭配名称">
+                
+                <div style="margin: 10px 0;">
+                    <h4>从衣橱选择搭配物品:</h4>
+                    <div class="outfit-items-list" id="outfitItemsList">
+                        <div class="outfit-item-placeholder">从衣橱中选择物品组成搭配</div>
+                    </div>
+                    <div style="display: flex; justify-content: center; margin-top: 10px;">
+                        <button class="upload-action-btn upload-cancel-btn" onclick="App.showWardrobeItemsForOutfit()">从衣橱选择</button>
+                    </div>
+                </div>
+                
+                <div class="upload-actions">
+                    <button class="upload-action-btn upload-cancel-btn" onclick="App.hideOutfitUploadModal()">取消</button>
+                    <button class="upload-action-btn upload-submit-btn" onclick="App.submitOutfit()">上传</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 选择衣橱物品模态框 -->
+        <div class="upload-modal" id="selectWardrobeModal">
+            <div class="upload-modal-content">
+                <div class="upload-title">选择搭配物品</div>
+                
+                <div class="user-gallery" id="wardrobeItemsForOutfit" style="max-height: 300px; overflow-y: auto; margin: 15px 0;"></div>
+                
+                <div class="upload-actions">
+                    <button class="upload-action-btn upload-cancel-btn" onclick="App.hideSelectWardrobeModal()">取消</button>
+                    <button class="upload-action-btn upload-submit-btn" onclick="App.confirmSelectWardrobeItems()">确定</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 删除确认模态框 -->
+        <div class="confirm-delete-modal" id="confirmDeleteModal">
+            <div class="confirm-delete-content">
+                <div class="confirm-delete-title">确认删除</div>
+                <div class="confirm-delete-message" id="deleteMessage">确定要删除此物品吗？此操作不可撤销。</div>
+                <div class="confirm-delete-actions">
+                    <button class="confirm-delete-btn confirm-cancel-btn" onclick="App.cancelDelete()">取消</button>
+                    <button class="confirm-delete-btn confirm-delete-action-btn" onclick="App.confirmDelete()">删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === 模块化应用对象 ===
+        const App = {
+            // 数据模块
+            data: {
+                wardrobeData: [],
+                outfitData: [],
+                cartData: [],
+                allTags: [], // 存储所有使用的标签
+                historyData: [
+                    { date: '12月05日', name: '街头休闲', color: '#b2bec3' }, 
+                    { date: '12月03日', name: '商务通勤', color: '#636e72' }
+                ],
+                homeOutfits: {
+                    recommend: [
+                        {title:"秋季通训", color:"#e3dede"}, 
+                        {title:"防风大衣", color:"#dbe4eb"},
+                        {title:"复古格子", color:"#a29bfe"},
+                        {title:"街头涂鸦", color:"#fd79a8"},
+                        {title:"简约白T", color:"#fdcb6e"},
+                        {title:"牛仔经典", color:"#e17055"},
+                        {title:"运动风", color:"#00b894"},
+                        {title:"学院风", color:"#d63031"},
+                        {title:"休闲卫衣", color:"#0984e3"},
+                        {title:"工装裤", color:"#6c5ce7"}
+                    ],
+                    japanese: [
+                        {title:"CityBoy 衬衫", color:"#c7ecee"}, 
+                        {title:"工装裤", color:"#95afc0"}, 
+                        {title:"冷帽", color:"#576574"},
+                        {title:"帆布鞋", color:"#2d3436"},
+                        {title:"牛仔夹克", color:"#00b894"},
+                        {title:"条纹T恤", color:"#e17055"},
+                        {title:"卡其裤", color:"#fdcb6e"},
+                        {title:"渔夫帽", color:"#636e72"},
+                        {title:"帆布包", color:"#b2bec3"},
+                        {title:"白衬衫", color:"#00cec9"}
+                    ],
+                    amekaji: [
+                        {title:"丹宁夹克", color:"#535c68"}, 
+                        {title:"工装靴", color:"#eb4d4b"},
+                        {title:"复古T恤", color:"#fd79a8"},
+                        {title:"背带裤", color:"#e17055"},
+                        {title:"棒球帽", color:"#00b894"},
+                        {title:"马丁靴", color:"#6c5ce7"},
+                        {title:"牛仔裤", color:"#74b9ff"},
+                        {title:"格子衬衫", color:"#a29bfe"},
+                        {title:"帆布鞋", color:"#e84393"},
+                        {title:"棒球夹克", color:"#f1c40f"}
+                    ],
+                    street: [
+                        {title:"Oversize 卫衣", color:"#a29bfe"}, 
+                        {title:"破坏牛仔", color:"#6c5ce7"}, 
+                        {title:"板鞋", color:"#55efc4"},
+                        {title:"棒球帽", color:"#fd79a8"},
+                        {title:"腰包", color:"#e17055"},
+                        {title:"连帽衫", color:"#00b894"},
+                        {title:"破洞牛仔裤", color:"#74b9ff"},
+                        {title:"高帮鞋", color:"#e84393"},
+                        {title:"运动裤", color:"#f1c40f"},
+                        {title:"墨镜", color:"#2d3436"}
+                    ]
+                },
+                // 新增：圈子数据数组
+                communityPosts: [
+                    {
+                        id: 1,
+                        user: "Kiko_Fan",
+                        avatar: null,
+                        image: null,
+                        content: "入手了这件中古夹克，版型太正了。",
+                        likes: 24,
+                        comments: 5,
+                        time: "2小时前",
+                        liked: false
+                    },
+                    {
+                        id: 2,
+                        user: "FashionLover",
+                        avatar: null,
+                        image: null,
+                        content: "今天的搭配分享，简约而不简单。",
+                        likes: 42,
+                        comments: 12,
+                        time: "5小时前",
+                        liked: true
+                    },
+                    {
+                        id: 3,
+                        user: "StyleGuru",
+                        avatar: null,
+                        image: null,
+                        content: "分享一下我的秋冬必备单品。",
+                        likes: 18,
+                        comments: 8,
+                        time: "昨天",
+                        liked: false
+                    },
+                    {
+                        id: 4,
+                        user: "TrendSetter",
+                        avatar: null,
+                        image: null,
+                        content: "这套搭配在雨天也很有型。",
+                        likes: 31,
+                        comments: 7,
+                        time: "昨天",
+                        liked: false
+                    },
+                    {
+                        id: 5,
+                        user: "WardrobeExpert",
+                        avatar: null,
+                        image: null,
+                        content: "如何用基础款穿出高级感？",
+                        likes: 56,
+                        comments: 15,
+                        time: "前天",
+                        liked: true
+                    }
+                ],
+                itemToDelete: null, // 记录待删除的物品
+                itemTypeToDelete: null // 记录待删除的物品类型 ('wardrobe', 'outfit', 'favorite')
+            },
+
+            // 工具函数模块
+            utils: {
+                // 动画辅助
+                animButton: function(el) {
+                    el.classList.remove('anim-click');
+                    void el.offsetWidth; // 强制重排以触发动画
+                    el.classList.add('anim-click');
+                },
+                
+                // WMO天气代码转文本
+                wmoToText: function(code) {
+                    if(code === 0) return "晴";
+                    if(code <= 3) return "多云";
+                    if(code <= 48) return "雾";
+                    if(code <= 67) return "雨";
+                    if(code <= 77) return "雪";
+                    return "阴";
+                },
+                
+                // 获取穿搭建议
+                getOutfitAdvice: function(temp, weatherCode) {
+                    if (weatherCode >= 95) return "有雷暴，尽量室内活动";
+                    if (weatherCode >= 71) return "下雪了，羽绒服+防滑靴";
+                    if (weatherCode >= 51) return "有雨，出门记得带伞";
+                    if (temp < 0) return "严寒，穿最厚的羽绒服！";
+                    if (temp < 10) return "寒冷，推荐大衣配围巾";
+                    if (temp < 18) return "微冷，夹克或卫衣很合适";
+                    if (temp < 24) return "舒适，长袖T恤或衬衫";
+                    if (temp < 30) return "微热，短袖T恤+透气裤装";
+                    return "酷热，背心短裤，注意防晒";
+                },
+                
+                // 从数组中随机选择n个元素
+                getRandomItems: function(array, count) {
+                    // 创建原数组的副本以避免修改原数组
+                    const shuffled = [...array].sort(() => 0.5 - Math.random());
+                    return shuffled.slice(0, count);
+                },
+                
+                // 生成随机图片
+                generateRandomImage: function(color) {
+                    // 创建一个简单的SVG作为占位图片
+                    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+                        <rect width="300" height="300" fill="${color}"/>
+                        <text x="150" y="150" font-family="Arial" font-size="20" fill="white" text-anchor="middle" dominant-baseline="middle">
+                            示例图片
+                        </text>
+                    </svg>`;
+                    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+                }
+            },
+
+            // 用户数据管理模块
+            user: {
+                // 加载用户数据
+                loadUserData: function() {
+                    ['height', 'weight', 'age', 'gender'].forEach(key => {
+                        const saved = localStorage.getItem('user_' + key);
+                        if (saved) document.getElementById('val-' + key).innerText = saved;
+                    });
+                    
+                    // 加载衣橱数据
+                    App.user.loadWardrobeData();
+                    // 加载搭配数据
+                    App.user.loadOutfitData();
+                    // 加载购物车数据
+                    App.user.loadCartData();
+                    // 加载标签数据
+                    App.user.loadTagsData();
+                },
+
+                // 保存衣橱数据
+                saveWardrobeData: function() {
+                    localStorage.setItem('wardrobe_data', JSON.stringify(App.data.wardrobeData));
+                },
+
+                // 加载衣橱数据
+                loadWardrobeData: function() {
+                    const saved = localStorage.getItem('wardrobe_data');
+                    if (saved) {
+                        App.data.wardrobeData = JSON.parse(saved);
+                    } else {
+                        // 初始化一些示例数据
+                        App.data.wardrobeData = [
+                            { id: 1, name: '白T恤', image: null, tags: ['上装', '休闲', '日常'] }, 
+                            { id: 2, name: '蓝色夹克', image: null, tags: ['上装', '外套', '春装'] }, 
+                            { id: 3, name: '工装裤', image: null, tags: ['下装', '休闲', '军绿'] }, 
+                            { id: 4, name: '牛仔裙', image: null, tags: ['裙装', '经典', '百搭'] }, 
+                            { id: 5, name: '帆布鞋', image: null, tags: ['鞋靴', '舒适', '休闲'] }
+                        ];
+                        App.user.saveWardrobeData();
+                    }
+                    
+                    // 更新所有标签列表
+                    App.user.updateAllTagsList();
+                },
+
+                // 保存搭配数据
+                saveOutfitData: function() {
+                    localStorage.setItem('outfit_data', JSON.stringify(App.data.outfitData));
+                },
+
+                // 加载搭配数据
+                loadOutfitData: function() {
+                    const saved = localStorage.getItem('outfit_data');
+                    if (saved) {
+                        App.data.outfitData = JSON.parse(saved);
+                    } else {
+                        // 初始化一些示例搭配数据
+                        App.data.outfitData = [
+                            { id: 1, name: '春季休闲', image: null, items: [1, 3, 5], description: '日常休闲搭配' }
+                        ];
+                        App.user.saveOutfitData();
+                    }
+                },
+
+                // 保存购物车数据
+                saveCartData: function() {
+                    localStorage.setItem('cart_data', JSON.stringify(App.data.cartData));
+                },
+
+                // 加载购物车数据
+                loadCartData: function() {
+                    const saved = localStorage.getItem('cart_data');
+                    if (saved) {
+                        App.data.cartData = JSON.parse(saved);
+                    } else {
+                        App.data.cartData = [];
+                        App.user.saveCartData();
+                    }
+                },
+
+                // 保存标签数据
+                saveTagsData: function() {
+                    localStorage.setItem('all_tags_data', JSON.stringify(App.data.allTags));
+                },
+
+                // 加载标签数据
+                loadTagsData: function() {
+                    const saved = localStorage.getItem('all_tags_data');
+                    if (saved) {
+                        App.data.allTags = JSON.parse(saved);
+                    } else {
+                        App.data.allTags = ['上装', '下装', '裙装', '鞋靴', '配件', '休闲', '正式', '运动', '春装', '夏装', '秋装', '冬装'];
+                        App.user.saveTagsData();
+                    }
+                },
+
+                // 更新所有标签列表
+                updateAllTagsList: function() {
+                    const allTagsSet = new Set();
+                    
+                    // 从衣橱数据中收集所有标签
+                    App.data.wardrobeData.forEach(item => {
+                        item.tags.forEach(tag => allTagsSet.add(tag));
+                    });
+                    
+                    // 更新标签列表
+                    App.data.allTags = Array.from(allTagsSet);
+                    App.user.saveTagsData();
+                    
+                    // 重新生成过滤器
+                    App.profile.generateWardrobeFilters();
+                },
+
+                // 开始编辑
+                startEdit: function(key) {
+                    const el = document.getElementById('val-' + key);
+                    // 如果已经是输入框或下拉框，不重复操作
+                    if (el.querySelector('input') || el.querySelector('select')) return;
+
+                    const currentVal = el.innerText;
+
+                    if (key === 'gender') {
+                        // 特殊处理：性别渲染为下拉框 <select>
+                        let html = `<select id="input-${key}" class="stat-input" onblur="App.user.finishEdit('${key}')" onchange="App.user.finishEdit('${key}')">`;
+                        const options = ['男', '女'];
+                        options.forEach(opt => {
+                            const selected = opt === currentVal ? 'selected' : '';
+                            html += `<option value="${opt}" ${selected}>${opt}</option>`;
+                        });
+                        html += `</select>`;
+                        el.innerHTML = html;
+                        document.getElementById(`input-${key}`).focus();
+                    } else {
+                        // 其他属性：渲染为数字输入框 <input type="number">
+                        el.innerHTML = `<input type="number" class="stat-input" id="input-${key}" value="${parseFloat(currentVal)||''}" onblur="App.user.finishEdit('${key}')" onkeydown="if(event.key==='Enter')this.blur()">`;
+                        document.getElementById(`input-${key}`).focus();
+                    }
+                },
+
+                // 完成编辑
+                finishEdit: function(key) {
+                    const input = document.getElementById('input-' + key);
+                    if (!input) return;
+
+                    let val = input.value.trim();
+
+                    if (key !== 'gender') {
+                        // 数值校验逻辑
+                        if (val === '' || isNaN(val) || val < 0) {
+                            val = '-'; // 非法输入重置为占位符
+                        } else {
+                            val = Math.round(val); // 取整
+                        }
+                    }
+
+                    localStorage.setItem('user_' + key, val);
+                    document.getElementById('val-' + key).innerText = val;
+                }
+            },
+
+            // 衣橱功能模块
+            wardrobe: {
+                currentImage: null,
+                currentTags: [],
+                
+                // 显示衣橱上传模态框
+                showWardrobeUploadModal: function() {
+                    document.getElementById('wardrobeUploadModal').classList.add('active');
+                    document.getElementById('wardrobeImagePreview').innerHTML = '<div class="placeholder">点击选择图片</div>';
+                    document.getElementById('wardrobeNameInput').value = '';
+                    document.getElementById('customTagInput').value = '';
+                    document.getElementById('wardrobeTagsList').innerHTML = '';
+                    App.wardrobe.currentImage = null;
+                    App.wardrobe.currentTags = [];
+                },
+                
+                // 隐藏衣橱上传模态框
+                hideWardrobeUploadModal: function() {
+                    document.getElementById('wardrobeUploadModal').classList.remove('active');
+                },
+                
+                // 处理衣橱图片上传
+                handleWardrobeImageUpload: function(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    
+                    // 检查文件类型是否为图片
+                    if (!file.type.match('image.*')) {
+                        alert('请选择图片文件');
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        App.wardrobe.currentImage = e.target.result;
+                        document.getElementById('wardrobeImagePreview').innerHTML = `<img src="${e.target.result}" alt="预览图">`;
+                    };
+                    reader.readAsDataURL(file);
+                },
+                
+                // 添加自定义标签
+                addCustomTag: function() {
+                    const input = document.getElementById('customTagInput');
+                    const tag = input.value.trim();
+                    if (!tag) return;
+                    
+                    // 检查标签是否已存在
+                    if (!App.wardrobe.currentTags.includes(tag)) {
+                        App.wardrobe.currentTags.push(tag);
+                        App.wardrobe.renderTags();
+                    }
+                    
+                    input.value = '';
+                },
+                
+                // 添加标签（从标签列表选择）
+                addTag: function(tag) {
+                    if (!App.wardrobe.currentTags.includes(tag)) {
+                        App.wardrobe.currentTags.push(tag);
+                        App.wardrobe.renderTags();
+                    }
+                },
+                
+                // 渲染标签列表
+                renderTags: function() {
+                    const container = document.getElementById('wardrobeTagsList');
+                    container.innerHTML = '';
+                    App.wardrobe.currentTags.forEach((tag, index) => {
+                        const div = document.createElement('div');
+                        div.className = 'tag-item';
+                        div.innerHTML = `${tag} <span class="tag-remove" onclick="App.wardrobe.removeTag(${index})">×</span>`;
+                        container.appendChild(div);
+                    });
+                },
+                
+                // 移除标签
+                removeTag: function(index) {
+                    App.wardrobe.currentTags.splice(index, 1);
+                    App.wardrobe.renderTags();
+                },
+                
+                // 提交衣橱物品
+                submitWardrobeItem: function() {
+                    const name = document.getElementById('wardrobeNameInput').value.trim();
+                    if (!name) {
+                        alert('请输入物品名称');
+                        return;
+                    }
+                    
+                    if (App.wardrobe.currentTags.length === 0) {
+                        alert('请至少添加一个标签');
+                        return;
+                    }
+                    
+                    // 生成唯一ID
+                    const id = Date.now();
+                    
+                    // 创建衣橱对象
+                    const wardrobeItem = {
+                        id: id,
+                        name: name,
+                        image: App.wardrobe.currentImage,
+                        tags: App.wardrobe.currentTags
+                    };
+                    
+                    // 添加到数据数组
+                    App.data.wardrobeData.unshift(wardrobeItem);
+                    
+                    // 保存到本地存储
+                    App.user.saveWardrobeData();
+                    
+                    // 更新所有标签列表
+                    App.user.updateAllTagsList();
+                    
+                    // 隐藏模态框
+                    App.wardrobe.hideWardrobeUploadModal();
+                    
+                    // 更新显示
+                    App.profile.filterWardrobe('all', document.querySelector('#wardrobeFiltersContainer .style-pill.active'));
+                    
+                    alert('添加成功！');
+                }
+            },
+
+            // 搭配上传功能模块
+            outfit: {
+                currentImage: null,
+                selectedItems: [],
+                
+                // 显示搭配上传模态框
+                showOutfitUploadModal: function() {
+                    document.getElementById('outfitUploadModal').classList.add('active');
+                    document.getElementById('outfitImagePreview').innerHTML = '<div class="placeholder">点击选择搭配图片</div>';
+                    document.getElementById('outfitNameInput').value = '';
+                    App.outfit.currentImage = null;
+                    App.outfit.selectedItems = [];
+                    App.outfit.renderSelectedItems();
+                },
+                
+                // 隐藏搭配上传模态框
+                hideOutfitUploadModal: function() {
+                    document.getElementById('outfitUploadModal').classList.remove('active');
+                },
+                
+                // 处理搭配图片上传
+                handleOutfitImageUpload: function(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    
+                    // 检查文件类型是否为图片
+                    if (!file.type.match('image.*')) {
+                        alert('请选择图片文件');
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        App.outfit.currentImage = e.target.result;
+                        document.getElementById('outfitImagePreview').innerHTML = `<img src="${e.target.result}" alt="预览图">`;
+                    };
+                    reader.readAsDataURL(file);
+                },
+                
+                // 显示衣橱物品供选择
+                showWardrobeItemsForOutfit: function() {
+                    document.getElementById('selectWardrobeModal').classList.add('active');
+                    App.outfit.renderWardrobeItemsForSelection();
+                },
+                
+                // 渲染衣橱物品供选择
+                renderWardrobeItemsForSelection: function() {
+                    const container = document.getElementById('wardrobeItemsForOutfit');
+                    container.innerHTML = '';
+                    
+                    if (App.data.wardrobeData.length === 0) {
+                        container.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">衣橱中暂无物品</div>';
+                        return;
+                    }
+                    
+                    App.data.wardrobeData.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'gallery-item stagger-item';
+                        if(item.image) {
+                            div.style.backgroundImage = `url(${item.image})`;
+                            div.style.backgroundSize = 'cover';
+                            div.style.backgroundPosition = 'center';
+                        } else {
+                            div.style.backgroundColor = '#f0f0f0';
+                        }
+                        div.innerHTML = `<span class="item-tag">${item.name}</span>`;
+                        
+                        // 添加选择事件
+                        div.onclick = function() {
+                            // 切换选中状态
+                            const index = App.outfit.selectedItems.findIndex(i => i.id === item.id);
+                            if (index === -1) {
+                                // 添加到选中列表
+                                App.outfit.selectedItems.push(item);
+                                div.style.border = '2px solid #000';
+                            } else {
+                                // 从选中列表移除
+                                App.outfit.selectedItems.splice(index, 1);
+                                div.style.border = 'none';
+                            }
+                            App.outfit.renderSelectedItems();
+                        };
+                        
+                        container.appendChild(div);
+                    });
+                },
+                
+                // 渲染已选物品
+                renderSelectedItems: function() {
+                    const container = document.getElementById('outfitItemsList');
+                    if (App.outfit.selectedItems.length === 0) {
+                        container.innerHTML = '<div class="outfit-item-placeholder">从衣橱中选择物品组成搭配</div>';
+                        return;
+                    }
+                    
+                    container.innerHTML = '';
+                    App.outfit.selectedItems.forEach((item, index) => {
+                        const div = document.createElement('div');
+                        div.className = 'outfit-item';
+                        div.innerHTML = `
+                            <div class="outfit-item-img">
+                                ${item.image ? `<img src="${item.image}" alt="${item.name}">` : `<div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;">${item.name.charAt(0)}</div>`}
+                            </div>
+                            <div class="outfit-item-name">${item.name}</div>
+                            <div class="outfit-item-remove" onclick="App.outfit.removeItemFromSelection(${index})">×</div>
+                        `;
+                        container.appendChild(div);
+                    });
+                },
+                
+                // 从选中列表移除物品
+                removeItemFromSelection: function(index) {
+                    App.outfit.selectedItems.splice(index, 1);
+                    App.outfit.renderSelectedItems();
+                    App.outfit.renderWardrobeItemsForSelection();
+                },
+                
+                // 确认选择衣橱物品
+                confirmSelectWardrobeItems: function() {
+                    document.getElementById('selectWardrobeModal').classList.remove('active');
+                },
+                
+                // 隐藏选择衣橱物品模态框
+                hideSelectWardrobeModal: function() {
+                    document.getElementById('selectWardrobeModal').classList.remove('active');
+                },
+                
+                // 提交搭配
+                submitOutfit: function() {
+                    const name = document.getElementById('outfitNameInput').value.trim();
+                    if (!name) {
+                        alert('请输入搭配名称');
+                        return;
+                    }
+                    
+                    if (App.outfit.selectedItems.length === 0) {
+                        alert('请至少选择一件物品组成搭配');
+                        return;
+                    }
+                    
+                    // 生成唯一ID
+                    const id = Date.now();
+                    
+                    // 创建搭配对象
+                    const outfitItem = {
+                        id: id,
+                        name: name,
+                        image: App.outfit.currentImage,
+                        items: App.outfit.selectedItems.map(item => item.id),
+                        description: `由${App.outfit.selectedItems.length}件物品组成的搭配`
+                    };
+                    
+                    // 添加到数据数组
+                    App.data.outfitData.unshift(outfitItem);
+                    
+                    // 保存到本地存储
+                    App.user.saveOutfitData();
+                    
+                    // 隐藏模态框
+                    App.outfit.hideOutfitUploadModal();
+                    
+                    alert('搭配上传成功！');
+                }
+            },
+
+            // 购物车导入功能模块
+            cart: {
+                // 导入购物车
+                importFromCart: function() {
+                    // 模拟从购物车导入数据
+                    const sampleItems = [
+                        { name: '条纹衬衫', price: 199, category: 'top' },
+                        { name: '高腰牛仔裤', price: 299, category: 'bottom' },
+                        { name: '小白鞋', price: 399, category: 'shoes' },
+                        { name: '帆布包', price: 129, category: 'accessory' }
+                    ];
+                    
+                    // 更新购物车数据
+                    App.data.cartData = sampleItems;
+                    App.user.saveCartData();
+                    
+                    // 更新界面显示
+                    App.cart.renderCartItems();
+                    
+                    alert('已从购物车导入4件商品！');
+                },
+                
+                // 渲染购物车物品
+                renderCartItems: function() {
+                    const container = document.getElementById('cartItemsList');
+                    if (App.data.cartData.length === 0) {
+                        container.innerHTML = '<div class="cart-item-placeholder">暂无购物车物品</div>';
+                        return;
+                    }
+                    
+                    container.innerHTML = '';
+                    App.data.cartData.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'cart-item';
+                        div.innerHTML = `${item.name} - ¥${item.price}`;
+                        container.appendChild(div);
+                    });
+                }
+            },
+
+            // 删除功能模块
+            delete: {
+                // 准备删除物品
+                prepareDelete: function(itemId, itemType) {
+                    App.data.itemToDelete = itemId;
+                    App.data.itemTypeToDelete = itemType;
+                    
+                    let message = '';
+                    if (itemType === 'wardrobe') {
+                        message = '确定要删除此衣橱物品吗？此操作不可撤销。';
+                    } else if (itemType === 'outfit') {
+                        message = '确定要删除此搭配吗？此操作不可撤销。';
+                    } else if (itemType === 'favorite') {
+                        message = '确定要删除此收藏吗？此操作不可撤销。';
+                    }
+                    
+                    document.getElementById('deleteMessage').textContent = message;
+                    document.getElementById('confirmDeleteModal').classList.add('active');
+                },
+                
+                // 取消删除
+                cancelDelete: function() {
+                    document.getElementById('confirmDeleteModal').classList.remove('active');
+                    App.data.itemToDelete = null;
+                    App.data.itemTypeToDelete = null;
+                },
+                
+                // 确认删除
+                confirmDelete: function() {
+                    if (!App.data.itemToDelete || !App.data.itemTypeToDelete) return;
+                    
+                    if (App.data.itemTypeToDelete === 'wardrobe') {
+                        // 从衣橱数据中删除物品
+                        App.data.wardrobeData = App.data.wardrobeData.filter(item => item.id !== App.data.itemToDelete);
+                        
+                        // 保存到本地存储
+                        App.user.saveWardrobeData();
+                        
+                        // 更新所有标签列表
+                        App.user.updateAllTagsList();
+                        
+                        // 重新渲染当前显示的衣橱
+                        const activeFilter = document.querySelector('#wardrobeFiltersContainer .style-pill.active');
+                        const filterType = activeFilter.dataset.filter || 'all';
+                        App.profile.filterWardrobe(filterType, activeFilter);
+                    } else if (App.data.itemTypeToDelete === 'outfit') {
+                        // 从搭配数据中删除搭配
+                        App.data.outfitData = App.data.outfitData.filter(item => item.id !== App.data.itemToDelete);
+                        
+                        // 保存到本地存储
+                        App.user.saveOutfitData();
+                        
+                        // 重新渲染搭配页面
+                        App.profile.showOutfits();
+                    } else if (App.data.itemTypeToDelete === 'favorite') {
+                        // 处理收藏删除（这里模拟删除收藏）
+                        // 在实际应用中，你可能需要一个专门的收藏数据数组
+                        // 这里我们简单地重新渲染收藏页面
+                        App.profile.showFavorites();
+                    }
+                    
+                    // 关闭确认模态框
+                    document.getElementById('confirmDeleteModal').classList.remove('active');
+                    
+                    // 重置待删除项
+                    App.data.itemToDelete = null;
+                    App.data.itemTypeToDelete = null;
+                    
+                    alert('删除成功！');
+                }
+            },
+
+            // 首页模块
+            home: {
+                // 过滤首页风格
+                filterHomeStyle: function(styleKey, el) {
+                    document.querySelectorAll('#page-home .style-pill').forEach(pill => pill.classList.remove('active'));
+                    el.classList.add('active');
+                    App.home.renderHomeGrid(styleKey);
+                },
+                
+                // 渲染首页网格
+                renderHomeGrid: function(key) {
+                    const container = document.getElementById('outfit-grid');
+                    container.innerHTML = '';
+                    
+                    // 从对应风格的推荐数组中随机选择6个元素
+                    const items = App.utils.getRandomItems(App.data.homeOutfits[key] || App.data.homeOutfits['recommend'], 6);
+                    
+                    items.forEach((item, index) => {
+                        const div = document.createElement('div');
+                        div.className = 'card stagger-item'; 
+                        div.style.animationDelay = `${index * 0.1}s`; 
+                        div.innerHTML = `<div class="card-img" style="background-color: ${item.color}"></div><div class="card-info">${item.title}</div>`;
+                        container.appendChild(div);
+                    });
+                },
+                
+                // 刷新首页推荐
+                refreshRecommendations: function() {
+                    // 获取当前选中的风格类型
+                    const activeStyle = document.querySelector('#page-home .style-pill.active');
+                    if (activeStyle) {
+                        const styleKey = activeStyle.getAttribute('onclick').match(/'([^']+)'/)[1];
+                        App.home.renderHomeGrid(styleKey);
+                    } else {
+                        // 如果没有选中的风格，使用默认的推荐风格
+                        App.home.renderHomeGrid('recommend');
+                    }
+                }
+            },
+
+            // 圈子模块
+            community: {
+                // 渲染圈子内容
+                renderCommunity: function() {
+                    const container = document.getElementById('community-feed');
+                    container.innerHTML = '';
+                    
+                    App.data.communityPosts.forEach((post, index) => {
+                        const div = document.createElement('div');
+                        div.className = 'post-item stagger-item';
+                        div.dataset.postId = post.id; // 添加数据属性以方便后续查找
+                        div.style.animationDelay = `${index * 0.1}s`;
+                        
+                        // 生成随机颜色作为占位图片
+                        const color = `#${Math.floor(Math.random()*16777215).toString(16)}`;
+                        const image = App.utils.generateRandomImage(color);
+                        
+                        // 简化的互动元素，用线条分隔
+                        div.innerHTML = `
+                            <div class="post-header">
+                                <div class="profile-avatar" style="width:36px; height:36px; margin-right:10px; background-color: ${color};"></div>
+                                <div style="font-size:14px; font-weight:bold;">${post.user}</div>
+                            </div>
+                            <div style="height:250px; background-image: url(${image}); background-size: cover; margin-bottom:10px; border-radius:8px;"></div>
+                            <p style="font-size:13px; color:#333;">${post.content}</p>
+                            <div class="post-actions">
+                                <div class="action-item ${post.liked ? 'liked' : ''}" onclick="App.community.toggleLike(${post.id})">
+                                    <div class="action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="${post.liked ? 'currentColor' : 'none'}" stroke="${post.liked ? 'currentColor' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="action-text">${post.likes}</div>
+                                </div>
+                                <div class="action-item" onclick="App.community.commentPost(${post.id})">
+                                    <div class="action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="action-text">${post.comments}</div>
+                                </div>
+                                <div class="action-item">
+                                    <div class="action-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <polyline points="12 6 12 12 16 14"></polyline>
+                                        </svg>
+                                    </div>
+                                    <div class="action-text">${post.time}</div>
+                                </div>
+                            </div>
+                        `;
+                        container.appendChild(div);
+                    });
+                },
+                
+                // 刷新圈子内容
+                refreshCommunity: function() {
+                    // 生成新的圈子内容（这里只是重新渲染现有数据，实际应用中可以获取新数据）
+                    App.community.renderCommunity();
+                },
+                
+                // 点赞功能
+                toggleLike: function(postId) {
+                    const post = App.data.communityPosts.find(p => p.id === postId);
+                    if (post) {
+                        post.liked = !post.liked;
+                        post.likes = post.liked ? post.likes + 1 : post.likes - 1;
+                        
+                        // 只更新特定的帖子DOM元素，而不是重新渲染整个社区
+                        const postElement = document.querySelector(`.post-item[data-post-id="${postId}"]`);
+                        if (postElement) {
+                            // 更新点赞状态的CSS类
+                            const actionItem = postElement.querySelector('.action-item');
+                            if (actionItem) {
+                                if (post.liked) {
+                                    actionItem.classList.add('liked');
+                                } else {
+                                    actionItem.classList.remove('liked');
+                                }
+                            }
+                            
+                            // 更新爱心图标的fill和stroke
+                            const heartIcon = postElement.querySelector('.action-icon svg');
+                            if (heartIcon) {
+                                heartIcon.setAttribute('fill', post.liked ? 'currentColor' : 'none');
+                                heartIcon.setAttribute('stroke', post.liked ? 'currentColor' : 'currentColor');
+                            }
+                            
+                            // 更新点赞数量
+                            const likeCountElement = postElement.querySelector('.action-text');
+                            if (likeCountElement) {
+                                likeCountElement.textContent = post.likes;
+                            }
+                        }
+                    }
+                },
+                
+                // 评论功能
+                commentPost: function(postId) {
+                    // 在实际应用中，这里会打开评论界面
+                    alert(`开始评论帖子 ${postId}`);
+                }
+            },
+
+            // 天气模块
+            weather: {
+                // 初始化真实天气
+                initRealWeather: async function() {
+                    const loc=document.querySelector('.w-location'), 
+                          temp=document.querySelector('.w-temp'), 
+                          desc=document.querySelector('.w-desc');
+                          
+                    if("geolocation" in navigator){
+                        navigator.geolocation.getCurrentPosition(async pos=>{
+                            const {latitude:lat, longitude:lon} = pos.coords;
+                            try {
+                                const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+                                const wData = await wRes.json();
+                                const cur = wData.current_weather;
+                                temp.innerText = Math.round(cur.temperature)+"°";
+                                const gRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`);
+                                const gData = await gRes.json();
+                                loc.innerHTML = (gData.address.city||gData.address.town||"本地");
+                                const condition = App.utils.wmoToText(cur.weathercode);
+                                const advice = App.utils.getOutfitAdvice(cur.temperature, cur.weathercode);
+                                desc.innerText = `${condition} · ${advice}`;
+                            } catch(e){ 
+                                loc.innerText="网络错误"; 
+                                desc.innerText="无法获取数据"; 
+                            }
+                        }, ()=>{
+                            loc.innerText="定位失败"; 
+                            desc.innerText="请允许GPS权限以获取推荐"; 
+                        });
+                    } else { 
+                        loc.innerText="不支持定位"; 
+                    }
+                }
+            },
+
+            // 个人资料模块
+            profile: {
+                // 切换个人资料标签页
+                switchProfileTab: function(type, el) {
+                    document.querySelectorAll('.p-tab').forEach(e=>e.classList.remove('active')); 
+                    el.classList.add('active');
+                    const gallery=document.getElementById('profile-gallery'), 
+                          bar=document.getElementById('wardrobe-sub-filters'),
+                          addBtn=document.getElementById('wardrobeAddBtn');
+                    gallery.classList.remove('history-mode'); 
+                    gallery.innerHTML = ''; 
+                    if(type==='wardrobe'){ 
+                        bar.style.display='block'; 
+                        addBtn.style.display='flex'; // 显示衣橱添加按钮
+                        // 默认显示全部
+                        App.profile.filterWardrobe('all', document.querySelector('#wardrobeFiltersContainer .style-pill.active'));
+                    }
+                    else if(type==='outfits') { 
+                        bar.style.display='none'; 
+                        addBtn.style.display='none'; // 隐藏衣橱添加按钮
+                        App.profile.showOutfits();
+                    }
+                    else if(type==='favorites') { 
+                        bar.style.display='none'; 
+                        addBtn.style.display='none'; // 隐藏衣橱添加按钮
+                        App.profile.showFavorites();
+                    }
+                },
+                
+                // 生成衣橱过滤器
+                generateWardrobeFilters: function() {
+                    const container = document.getElementById('wardrobeFiltersContainer');
+                    container.innerHTML = '<span class="style-pill active" data-filter="all" onclick="App.animButton(this); App.filterWardrobe(\'all\', this)">全部</span>';
+                    
+                    // 添加所有唯一标签作为过滤器
+                    const uniqueTags = [...new Set(App.data.allTags)];
+                    
+                    uniqueTags.forEach(tag => {
+                        const span = document.createElement('span');
+                        span.className = 'style-pill';
+                        span.textContent = tag;
+                        span.dataset.filter = tag; // 添加data属性记录过滤类型
+                        span.onclick = function() {
+                            App.animButton(this);
+                            App.filterWardrobe(tag, this);
+                        };
+                        container.appendChild(span);
+                    });
+                },
+                
+                // 过滤衣橱内容
+                filterWardrobe: function(tag, el) {
+                    document.querySelectorAll('#wardrobeFiltersContainer .style-pill').forEach(e=>e.classList.remove('active')); 
+                    if(el) el.classList.add('active');
+                    
+                    const gallery=document.getElementById('profile-gallery'); 
+                    gallery.innerHTML='';
+                    
+                    let data = App.data.wardrobeData;
+                    if(tag !== 'all') {
+                        data = data.filter(i => i.tags.includes(tag));
+                    }
+                    
+                    if(data.length===0){
+                        gallery.innerHTML='<div style="padding:20px;text-align:center;color:#999;grid-column:1/-1">暂无</div>';
+                        return;
+                    }
+                    
+                    data.forEach((item, index)=>{
+                        const d=document.createElement('div'); 
+                        d.className='gallery-item stagger-item'; 
+                        if(item.image) {
+                            d.style.backgroundImage = `url(${item.image})`;
+                            d.style.backgroundSize = 'cover';
+                            d.style.backgroundPosition = 'center';
+                        } else {
+                            d.style.backgroundColor = '#f0f0f0'; 
+                        }
+                        d.style.animationDelay = `${index * 0.05}s`;
+                        d.innerHTML=`<span class="item-tag">${item.name}</span><div class="delete-btn" onclick="App.prepareDelete(${item.id}, 'wardrobe')">×</div>`; 
+                        gallery.appendChild(d);
+                    });
+                },
+                
+                // 显示搭配
+                showOutfits: function() {
+                    const gallery = document.getElementById('profile-gallery');
+                    gallery.innerHTML = '';
+                    
+                    if(App.data.outfitData.length === 0) {
+                        gallery.innerHTML='<div style="padding:20px;text-align:center;color:#999;grid-column:1/-1">暂无搭配</div>';
+                        return;
+                    }
+                    
+                    App.data.outfitData.forEach((outfit, index) => {
+                        const d = document.createElement('div');
+                        d.className = 'gallery-item stagger-item';
+                        if(outfit.image) {
+                            d.style.backgroundImage = `url(${outfit.image})`;
+                            d.style.backgroundSize = 'cover';
+                            d.style.backgroundPosition = 'center';
+                        } else {
+                            d.style.backgroundColor = '#e0e0e0';
+                        }
+                        d.style.animationDelay = `${index * 0.05}s`;
+                        d.innerHTML = `<span class="item-tag">${outfit.name}</span><div class="delete-btn" onclick="App.prepareDelete(${outfit.id}, 'outfit')">×</div>`;
+                        gallery.appendChild(d);
+                    });
+                },
+                
+                // 显示收藏
+                showFavorites: function() {
+                    const gallery = document.getElementById('profile-gallery');
+                    gallery.innerHTML = '';
+                    
+                    // 模拟收藏数据
+                    const favorites = [
+                        { id: 1, name: '夏日清凉', color: '#a29bfe' },
+                        { id: 2, name: '冬季温暖', color: '#fd79a8' },
+                        { id: 3, name: '商务正装', color: '#fdcb6e' }
+                    ];
+                    
+                    if(favorites.length === 0) {
+                        gallery.innerHTML='<div style="padding:20px;text-align:center;color:#999;grid-column:1/-1">暂无收藏</div>';
+                        return;
+                    }
+                    
+                    favorites.forEach((favorite, index) => {
+                        const d = document.createElement('div');
+                        d.className = 'gallery-item stagger-item';
+                        d.style.backgroundColor = favorite.color;
+                        d.style.animationDelay = `${index * 0.05}s`;
+                        d.innerHTML = `<span class="item-tag">${favorite.name}</span><div class="delete-btn" onclick="App.prepareDelete(${favorite.id}, 'favorite')">×</div>`;
+                        gallery.appendChild(d);
+                    });
+                }
+            },
+
+            // 导航模块
+            nav: {
+                // 切换导航
+                switchNav: function(page, el) {
+                    document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); 
+                    el.classList.add('active');
+                    document.querySelectorAll('.page-content').forEach(e=>e.classList.remove('active')); 
+                    document.getElementById(`page-${page}`).classList.add('active');
+                    
+                    // 在切换到用户页面时，检查当前子标签页
+                    if(page === 'profile') {
+                        const activeTab = document.querySelector('.p-tab.active');
+                        if(activeTab && activeTab.textContent === '衣橱') {
+                            document.getElementById('wardrobeAddBtn').style.display = 'flex';
+                        } else {
+                            document.getElementById('wardrobeAddBtn').style.display = 'none';
+                        }
+                    } else {
+                        document.getElementById('wardrobeAddBtn').style.display = 'none';
+                    }
+                    
+                    // 在切换到圈子页面时，渲染圈子内容
+                    if(page === 'community') {
+                        App.community.renderCommunity();
+                    }
+                }
+            },
+
+            // === 直接在App对象上提供函数引用，以支持HTML中的直接调用 ===
+            animButton: function(el) { App.utils.animButton(el); },
+            loadUserData: function() { App.user.loadUserData(); },
+            startEdit: function(key) { App.user.startEdit(key); },
+            finishEdit: function(key) { App.user.finishEdit(key); },
+            filterHomeStyle: function(styleKey, el) { App.home.filterHomeStyle(styleKey, el); },
+            renderHomeGrid: function(key) { App.home.renderHomeGrid(key); },
+            getOutfitAdvice: function(temp, weatherCode) { return App.utils.getOutfitAdvice(temp, weatherCode); },
+            wmoToText: function(code) { return App.utils.wmoToText(code); },
+            initRealWeather: function() { App.weather.initRealWeather(); },
+            switchNav: function(page, el) { App.nav.switchNav(page, el); },
+            switchProfileTab: function(type, el) { App.profile.switchProfileTab(type, el); },
+            filterWardrobe: function(tag, el) { App.profile.filterWardrobe(tag, el); },
+            generateWardrobeFilters: function() { App.profile.generateWardrobeFilters(); },
+            showWardrobeUploadModal: function() { App.wardrobe.showWardrobeUploadModal(); },
+            hideWardrobeUploadModal: function() { App.wardrobe.hideWardrobeUploadModal(); },
+            handleWardrobeImageUpload: function(event) { App.wardrobe.handleWardrobeImageUpload(event); },
+            addCustomTag: function() { App.wardrobe.addCustomTag(); },
+            addTag: function(tag) { App.wardrobe.addTag(tag); },
+            removeTag: function(index) { App.wardrobe.removeTag(index); },
+            renderTags: function() { App.wardrobe.renderTags(); },
+            submitWardrobeItem: function() { App.wardrobe.submitWardrobeItem(); },
+            showOutfitUploadModal: function() { App.outfit.showOutfitUploadModal(); },
+            hideOutfitUploadModal: function() { App.outfit.hideOutfitUploadModal(); },
+            handleOutfitImageUpload: function(event) { App.outfit.handleOutfitImageUpload(event); },
+            showWardrobeItemsForOutfit: function() { App.outfit.showWardrobeItemsForOutfit(); },
+            renderWardrobeItemsForSelection: function() { App.outfit.renderWardrobeItemsForSelection(); },
+            renderSelectedItems: function() { App.outfit.renderSelectedItems(); },
+            removeItemFromSelection: function(index) { App.outfit.removeItemFromSelection(index); },
+            confirmSelectWardrobeItems: function() { App.outfit.confirmSelectWardrobeItems(); },
+            hideSelectWardrobeModal: function() { App.outfit.hideSelectWardrobeModal(); },
+            submitOutfit: function() { App.outfit.submitOutfit(); },
+            importFromCart: function() { App.cart.importFromCart(); },
+            renderCartItems: function() { App.cart.renderCartItems(); },
+            prepareDelete: function(itemId, itemType) { App.delete.prepareDelete(itemId, itemType); },
+            cancelDelete: function() { App.delete.cancelDelete(); },
+            confirmDelete: function() { App.delete.confirmDelete(); },
+            showOutfits: function() { App.profile.showOutfits(); },
+            showFavorites: function() { App.profile.showFavorites(); },
+            refreshRecommendations: function() { App.home.refreshRecommendations(); },
+            renderCommunity: function() { App.community.renderCommunity(); },
+            refreshCommunity: function() { App.community.refreshCommunity(); },
+            toggleLike: function(postId) { App.community.toggleLike(postId); },
+            commentPost: function(postId) { App.community.commentPost(postId); },
+
+            // 初始化应用
+            init: function() {
+                App.weather.initRealWeather();
+                App.user.loadUserData();
+                App.home.renderHomeGrid('recommend'); 
+                App.profile.switchProfileTab('wardrobe', document.querySelector('.p-tab.active'));
+                App.cart.renderCartItems();
+                App.profile.generateWardrobeFilters();
+                App.community.renderCommunity(); // 初始化圈子内容
+            }
+        };
+
+        // === 暴露全局函数（向后兼容） ===
+        window.animButton = function(el) { App.animButton(el); };
+        window.loadUserData = function() { App.loadUserData(); };
+        window.startEdit = function(key) { App.startEdit(key); };
+        window.finishEdit = function(key) { App.finishEdit(key); };
+        window.filterHomeStyle = function(styleKey, el) { App.filterHomeStyle(styleKey, el); };
+        window.renderHomeGrid = function(key) { App.renderHomeGrid(key); };
+        window.getOutfitAdvice = function(temp, weatherCode) { return App.getOutfitAdvice(temp, weatherCode); };
+        window.wmoToText = function(code) { return App.wmoToText(code); };
+        window.initRealWeather = function() { App.initRealWeather(); };
+        window.switchNav = function(page, el) { App.switchNav(page, el); };
+        window.switchProfileTab = function(type, el) { App.switchProfileTab(type, el); };
+        window.filterWardrobe = function(tag, el) { App.filterWardrobe(tag, el); };
+        window.generateWardrobeFilters = function() { App.generateWardrobeFilters(); };
+        window.showWardrobeUploadModal = function() { App.showWardrobeUploadModal(); };
+        window.hideWardrobeUploadModal = function() { App.hideWardrobeUploadModal(); };
+        window.handleWardrobeImageUpload = function(event) { App.handleWardrobeImageUpload(event); };
+        window.addCustomTag = function() { App.addCustomTag(); };
+        window.addTag = function(tag) { App.addTag(tag); };
+        window.removeTag = function(index) { App.removeTag(index); };
+        window.renderTags = function() { App.renderTags(); };
+        window.submitWardrobeItem = function() { App.submitWardrobeItem(); };
+        window.showOutfitUploadModal = function() { App.showOutfitUploadModal(); };
+        window.hideOutfitUploadModal = function() { App.hideOutfitUploadModal(); };
+        window.handleOutfitImageUpload = function(event) { App.handleOutfitImageUpload(event); };
+        window.showWardrobeItemsForOutfit = function() { App.showWardrobeItemsForOutfit(); };
+        window.renderWardrobeItemsForSelection = function() { App.renderWardrobeItemsForSelection(); };
+        window.renderSelectedItems = function() { App.renderSelectedItems(); };
+        window.removeItemFromSelection = function(index) { App.removeItemFromSelection(index); };
+        window.confirmSelectWardrobeItems = function() { App.confirmSelectWardrobeItems(); };
+        window.hideSelectWardrobeModal = function() { App.hideSelectWardrobeModal(); };
+        window.submitOutfit = function() { App.submitOutfit(); };
+        window.importFromCart = function() { App.importFromCart(); };
+        window.renderCartItems = function() { App.renderCartItems(); };
+        window.prepareDelete = function(itemId, itemType) { App.prepareDelete(itemId, itemType); };
+        window.cancelDelete = function() { App.cancelDelete(); };
+        window.confirmDelete = function() { App.confirmDelete(); };
+        window.showOutfits = function() { App.showOutfits(); };
+        window.showFavorites = function() { App.showFavorites(); };
+        window.refreshRecommendations = function() { App.refreshRecommendations(); };
+        window.renderCommunity = function() { App.renderCommunity(); };
+        window.refreshCommunity = function() { App.refreshCommunity(); };
+        window.toggleLike = function(postId) { App.toggleLike(postId); };
+        window.commentPost = function(postId) { App.commentPost(postId); };
+
+        // 页面加载完成时初始化应用
+        window.onload = function() {
+            App.init();
+        };
+    </script>
+</body>
+</html>
