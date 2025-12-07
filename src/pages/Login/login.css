@@ -1,0 +1,58 @@
+/* login.css */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+p {
+  font-size: 1.2em;
+  margin-bottom: 30px;
+  color: #666;
+}
+
+.button-group {
+  display: flex;
+  gap: 20px;
+}
+
+button {
+  padding: 15px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+.stylist-btn {
+  background-color: #42b883; /* Vue 绿色 */
+  color: white;
+}
+
+.stylist-btn:hover {
+  background-color: #369c6f;
+}
+
+.user-btn {
+  background-color: #35495e; /* Vue 深色 */
+  color: white;
+}
+
+.user-btn:hover {
+  background-color: #2b3d4f;
+}
