@@ -1,0 +1,98 @@
+/* 1. 全局重置 */
+:root {
+  --app-max-width: 450px; /* 定义电脑端的最大宽度 */
+}
+
+* {
+  box-sizing: border-box; /* 关键：防止 padding 把盒子撑爆 */
+  -webkit-tap-highlight-color: transparent; /* 去除点击高亮 */
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* 防止最外层滚动 */
+  background-color: #f5f5f5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* 2. 应用容器 #app 配置 */
+#app {
+  width: 100%;
+  height: 100%; /* 占满屏幕高度 */
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 3. 电脑端适配 (当屏幕宽度 > 500px 时) */
+@media (min-width: 500px) {
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #e0e0e0; /* 电脑端背景深一点 */
+    background-image: radial-gradient(#ccc 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  #app {
+    width: 100%;
+    max-width: var(--app-max-width); /* 限制最大宽度 */
+    height: 90vh; /* 电脑上高度设为 90% */
+    max-height: 900px;
+    border-radius: 20px; /* 加上圆角 */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15); /* 加上投影 */
+    aspect-ratio: 9 / 18; /* 保持手机比例 */
+  }
+}
+
+/* 4. 手机端适配 (默认生效，或当屏幕 < 500px 时) */
+@media (max-width: 500px) {
+  #app {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+    max-width: none; /* 取消宽度限制 */
+  }
+}
+
+/* 5. 通用组件样式修正 */
+
+/* 按钮 - 确保不撑出屏幕 */
+.line-btn {
+  width: 100%;
+  padding: 14px 0;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.line-btn:active { opacity: 0.8; }
+
+/* 页面容器 - 统一内边距 */
+.page-container {
+  flex: 1;
+  overflow-y: auto; /* 允许内部滚动 */
+  overflow-x: hidden; /* 禁止横向滚动 */
+  padding: 20px;
+  /* iOS 滚动回弹效果 */
+  -webkit-overflow-scrolling: touch; 
+}
+
+/* 隐藏滚动条但允许滚动 */
+::-webkit-scrollbar {
+  display: none;
+}
