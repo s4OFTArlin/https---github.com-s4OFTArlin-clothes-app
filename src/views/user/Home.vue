@@ -67,6 +67,7 @@ const currentTab = ref('discover')
 <style scoped>
 .page-container {
   background: #fff;
+  padding:0;
 }
 
 /* 顶部样式 */
@@ -76,7 +77,7 @@ const currentTab = ref('discover')
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   z-index: 10;
-  padding: 15px 15px 0 15px;
+  padding: 30px 28px 10px 28px;
   border-bottom: 1px solid #f0f0f0;
 }
 
@@ -126,7 +127,9 @@ const currentTab = ref('discover')
 }
 
 /* 内容流 */
-.content-feed { padding: 15px; }
+.content-feed { 
+  padding: 23px; 
+}
 
 /* 发现页瀑布流 */
 .grid-feed {

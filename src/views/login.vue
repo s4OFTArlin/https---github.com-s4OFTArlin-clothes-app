@@ -9,7 +9,7 @@
         <Crown :size="24" color="#ffd700" class="logo-deco" />
       </div>
       <h1 class="app-name">衣次元</h1>
-      <p class="app-desc">你的卡通穿搭宇宙</p>
+      <p class="app-desc">你的穿搭宇宙</p>
     </div>
 
     <!-- 2. 身份选择区域 -->
