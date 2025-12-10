@@ -129,15 +129,15 @@ const goToProfile = (id) => router.push(`/user/profile/${id}`)
 
 <style scoped>
 /* 保持原有样式不变，仅确保 background-size: cover 存在 */
-.page-container { background: #fff; height: 100%; display: flex; flex-direction: column; }
-.sticky-header { position: sticky; top: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); z-index: 10; padding: 10px 15px 0 15px; border-bottom: 1px solid #f0f0f0; }
+.page-container { background: #fff; height: 100%; display: flex; flex-direction: column; padding:0}
+.sticky-header { position: sticky; top: 0; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); z-index: 10; padding: 30px 30px 10px 30px; border-bottom: 1px solid #f0f0f0; }
 .search-input-box { background: #f5f5f5; border-radius: 20px; padding: 8px 12px; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .search-input-box input { border: none; background: transparent; outline: none; font-size: 14px; width: 100%; color: #333; }
 .tab-switch { display: flex; gap: 30px; padding-bottom: 8px; padding-left: 5px; }
 .tab-switch span { font-size: 15px; color: #999; font-weight: 600; cursor: pointer; position: relative; padding-bottom: 6px; transition: all 0.2s; }
 .tab-switch span.active { color: #000; font-size: 16px; }
 .tab-switch span.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 16px; height: 3px; background: #ff80ab; border-radius: 2px; }
-.content-feed { padding: 15px; }
+.content-feed { padding: 10px 25px 25px 25px; }
 .grid-feed { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .feed-card { border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03); background: #fff; border: 1px solid #f9f9f9; cursor: pointer; transition: transform 0.1s; }
 .feed-card:active { transform: scale(0.98); }
@@ -150,7 +150,7 @@ const goToProfile = (id) => router.push(`/user/profile/${id}`)
 .red-text { color: #ff4081; font-weight: bold; transition: color 0.3s; }
 .user-mini { display: flex; align-items: center; gap: 4px; }
 .mini-avatar { width: 16px; height: 16px; border-radius: 50%; background-color: #ccc; background-position: center; background-size: cover; }
-.list-feed { display: flex; flex-direction: column; gap: 30px; }
+.list-feed { display: flex; flex-direction: column; gap: 30px; padding: 10px 10px 10px 10px; }
 .feed-row { padding-bottom: 15px; border-bottom: 1px solid #f9f9f9; cursor: pointer; }
 .avatar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .avatar { width: 36px; height: 36px; border-radius: 50%; background-color: #f0f0f0; background-position: center; background-size: cover; }
