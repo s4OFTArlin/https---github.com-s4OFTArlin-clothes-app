@@ -24,7 +24,7 @@
         <input type="tel" placeholder="请输入手机号" v-model="phone" maxlength="11" />
       </div>
 
-      <!-- 验证码 -->
+      <!-- 验证码 (重点修复区域) -->
       <div class="input-group">
         <div class="icon-slot">
           <ShieldCheck :size="20" />
@@ -71,7 +71,6 @@ import { ChevronLeft, Smartphone, ShieldCheck, ArrowRight, Check, MessageCircle,
 const route = useRoute()
 const router = useRouter()
 
-// 获取当前角色: 'stylist' 或 'user'
 const currentRole = computed(() => route.query.role || 'user')
 
 const phone = ref('')
@@ -82,27 +81,19 @@ let interval = null
 
 const goBack = () => router.back()
 
-// 发送验证码逻辑
 const sendCode = () => {
   if (!phone.value) return alert('请输入手机号')
-  
-  // 模拟发送
   timer.value = 60
   interval = setInterval(() => {
     timer.value--
     if (timer.value <= 0) clearInterval(interval)
   }, 1000)
-  
-  // 模拟填入验证码
   setTimeout(() => { code.value = '123456' }, 1000)
 }
 
-// 登录逻辑
 const handleLogin = () => {
   if (!phone.value || !code.value) return alert('请完善登录信息')
   if (!agreed.value) return alert('请先同意协议')
-
-  // 根据角色跳转到不同首页
   if (currentRole.value === 'stylist') {
     router.push('/stylist')
   } else {
@@ -121,17 +112,16 @@ onUnmounted(() => clearInterval(interval))
   padding: 20px 30px;
   background: #fff;
   transition: background 0.3s;
+  box-sizing: border-box; /* 防止 padding 撑大 */
 }
 
 /* --- 配色方案 --- */
-/* 搭配师主题 (薄荷绿) */
 .login-container.stylist { background: linear-gradient(180deg, #e0f2f1 0%, #fff 40%); }
 .login-container.stylist .main-btn { background: #00695c; box-shadow: 0 8px 20px rgba(0, 105, 92, 0.3); }
 .login-container.stylist .code-btn { color: #00695c; }
 .login-container.stylist .checkbox.checked { background: #00695c; border-color: #00695c; }
 .login-container.stylist .icon-slot { color: #00695c; }
 
-/* 用户主题 (淡粉色) */
 .login-container.user { background: linear-gradient(180deg, #fce4ec 0%, #fff 40%); }
 .login-container.user .main-btn { background: #d81b60; box-shadow: 0 8px 20px rgba(216, 27, 96, 0.3); }
 .login-container.user .code-btn { color: #d81b60; }
@@ -150,6 +140,7 @@ onUnmounted(() => clearInterval(interval))
 /* 表单 */
 .form-area { flex: 1; display: flex; flex-direction: column; gap: 20px; }
 
+/* ⬇️⬇️⬇️ 关键修复部分 ⬇️⬇️⬇️ */
 .input-group {
   background: #fff;
   border: 1px solid #eee;
@@ -157,15 +148,50 @@ onUnmounted(() => clearInterval(interval))
   height: 60px;
   display: flex;
   align-items: center;
-  padding: 0 15px;
+  padding: 0 15px; /* 稍微减小内边距 */
   transition: border 0.2s;
+  overflow: hidden; /* 防止内容溢出 */
 }
 .input-group:focus-within { border-color: #ccc; }
 
-.icon-slot { margin-right: 15px; display: flex; align-items: center; }
-.input-group input { border: none; outline: none; flex: 1; font-size: 16px; background: transparent; height: 100%; }
+.icon-slot { 
+  margin-right: 10px; /* 减小图标间距 */
+  display: flex; 
+  align-items: center;
+  flex-shrink: 0; /* 防止图标被压缩 */
+}
 
-.code-btn { background: none; border: none; font-weight: 600; font-size: 14px; cursor: pointer; white-space: nowrap; padding-left: 15px; border-left: 1px solid #eee; height: 20px; line-height: 20px; }
+.input-group input { 
+  border: none; 
+  outline: none; 
+  font-size: 16px; 
+  background: transparent; 
+  height: 100%;
+  
+  /* ⚠️ 核心修复：允许输入框无限缩小，以便腾出空间给按钮 */
+  flex: 1;
+  min-width: 0; 
+}
+
+.code-btn { 
+  background: none; 
+  border: none; 
+  font-weight: 600; 
+  cursor: pointer; 
+  white-space: nowrap; /* 禁止文字换行 */
+  
+  /* 样式调整 */
+  padding-left: 10px; 
+  border-left: 1px solid #eee; 
+  height: 24px; 
+  line-height: 24px;
+  font-size: 13px; /* 稍微调小字号 */
+  
+  /* ⚠️ 核心修复：防止按钮被压缩 */
+  flex-shrink: 0; 
+}
+/* ⬆️⬆️⬆️ 关键修复结束 ⬆️⬆️⬆️ */
+
 .code-btn:disabled { color: #ccc; }
 
 .main-btn {
@@ -186,7 +212,7 @@ onUnmounted(() => clearInterval(interval))
 
 /* 协议 */
 .agreement { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #999; justify-content: center; margin-top: 10px; }
-.checkbox { width: 16px; height: 16px; border: 1px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+.checkbox { width: 16px; height: 16px; border: 1px solid #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
 
 /* 底部第三方 */
 .social-login { margin-top: auto; padding-bottom: 20px; }

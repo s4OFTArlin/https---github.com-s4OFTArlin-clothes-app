@@ -36,7 +36,11 @@ const router = createRouter({
         { path: 'home', component: () => import('../views/user/Home.vue') },
         { path: 'mall', component: () => import('../views/user/Mall.vue') },
         { path: 'message', component: () => import('../views/user/Message.vue') },
-        { path: 'mine', component: () => import('../views/user/Mine.vue') }
+        { path: 'mine', component: () => import('../views/user/Mine.vue') },
+        { path: 'mall/service', component: () => import('../views/user/sub/CustomerService.vue') },
+        { path: 'message/chat', component: () => import('../views/user/sub/ChatDetail.vue') },
+        { path: 'post/:id', component: () => import('../views/user/sub/PostDetail.vue') },
+        { path: 'profile/:id', component: () => import('../views/user/sub/UserProfile.vue') }
       ]
     }
   ]

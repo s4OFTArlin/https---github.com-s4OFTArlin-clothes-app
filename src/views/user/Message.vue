@@ -6,8 +6,9 @@
     </div>
 
     <div class="msg-list">
-      <!-- 搭配师对话 (模拟置顶) -->
-      <div class="msg-item active">
+      
+      <!-- 1. 搭配师对话 (可点击跳转) -->
+      <div class="msg-item active" @click="openChat('专属搭配师_Lin')">
         <div class="avatar-wrap">
           <div class="avatar stylist">STY</div>
           <div class="online-dot"></div>
@@ -21,8 +22,8 @@
         </div>
       </div>
 
-      <!-- 系统消息 -->
-      <div class="msg-item">
+      <!-- 2. 系统消息 (不可跳转或做简单处理) -->
+      <div class="msg-item system-item">
         <div class="avatar-wrap">
           <div class="avatar system">SYS</div>
         </div>
@@ -34,9 +35,21 @@
           <p class="last-msg">您的订单已发货，请注意查收。</p>
         </div>
       </div>
+
     </div>
   </div>
 </template>
+
+<script setup>
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const openChat = (name) => {
+  // 跳转并带上名字参数
+  router.push(`/user/message/chat?name=${name}`)
+}
+</script>
 
 <style scoped>
 .page-container { background: #fff; padding: 20px; }
@@ -46,8 +59,18 @@
 
 .msg-list { display: flex; flex-direction: column; gap: 20px; }
 
-.msg-item { display: flex; gap: 15px; align-items: center; padding: 15px; border-radius: 16px; transition: background 0.2s; }
+.msg-item { 
+  display: flex; gap: 15px; align-items: center; 
+  padding: 15px; border-radius: 16px; 
+  transition: background 0.2s; 
+  cursor: pointer; /* 变为手型 */
+}
+
+/* 按压反馈 */
 .msg-item:active, .msg-item.active { background: #f9f9f9; }
+
+/* 系统消息稍微淡一点，区分开 */
+.system-item { opacity: 0.8; }
 
 .avatar-wrap { position: relative; }
 .avatar { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 14px; }
