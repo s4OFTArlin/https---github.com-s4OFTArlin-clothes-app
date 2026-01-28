@@ -1,21 +1,24 @@
-import { createRouter, createWebHistory } from 'vue-router'
+// 1. 修改 import 导入，增加 Hash 支持
+import { createRouter, createWebHashHistory } from 'vue-router' 
 import Login from '../views/Login.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  // 2. 修改这里：把 createWebHistory 改为 createWebHashHistory
+  // 记得删掉里面的 BASE_URL，Hash 模式通常不需要它
+  history: createWebHashHistory(), 
+  
   routes: [
     {
       path: '/',
-      name: 'RoleSelect', // 原 Login 改名为 RoleSelect 更贴切
+      name: 'RoleSelect',
       component: Login
     },
-    // --- 新增登录表单页 ---
+    // ... 下面其他的路由配置保持不变 ...
     {
       path: '/login',
       name: 'SignIn',
       component: () => import('../views/SignIn.vue')
     },
-    // -------------------
     {
       path: '/stylist',
       component: () => import('../views/stylist/Layout.vue'),
@@ -40,7 +43,9 @@ const router = createRouter({
         { path: 'mall/service', component: () => import('../views/user/sub/CustomerService.vue') },
         { path: 'message/chat', component: () => import('../views/user/sub/ChatDetail.vue') },
         { path: 'post/:id', component: () => import('../views/user/sub/PostDetail.vue') },
-        { path: 'profile/:id', component: () => import('../views/user/sub/UserProfile.vue') }
+        { path: 'profile/:id', component: () => import('../views/user/sub/UserProfile.vue') },
+        { path: 'settings', component: () => import('../views/user/sub/Settings.vue') },
+        { path: 'vip', component: () => import('../views/user/sub/VipLevel.vue') }
       ]
     }
   ]

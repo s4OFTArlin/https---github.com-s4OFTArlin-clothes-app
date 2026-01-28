@@ -65,7 +65,7 @@
 
     <!-- 3. 底部版权 -->
     <div class="footer-section">
-      <p>© 2024 YICIYUAN APP</p>
+      <p>© 2025 YICIYUAN APP</p>
     </div>
   </div>
 </template>

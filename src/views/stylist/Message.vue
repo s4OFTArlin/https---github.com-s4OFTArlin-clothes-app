@@ -5,13 +5,15 @@
       <p>Service Requests</p>
     </div>
 
-    <!-- 订单列表 -->
     <div class="order-list">
       <div class="order-card" v-for="item in orders" :key="item.id">
-        <!-- 卡片头部 -->
         <div class="card-top">
           <div class="user-info">
-            <div class="avatar" :style="{ background: item.bg }">{{ item.name[0] }}</div>
+            <img 
+              :src="`https://api.dicebear.com/7.x/notionists/svg?seed=${item.name}`" 
+              class="avatar-img" 
+              :style="{ background: item.bg }"
+            />
             <div class="text">
               <span class="name">{{ item.name }}</span>
               <span class="time">{{ item.time }}</span>
@@ -22,7 +24,6 @@
           </span>
         </div>
 
-        <!-- 简略描述 -->
         <div class="card-body">
           <div class="req-title">
             <Sparkles :size="16" color="#f59e0b" style="margin-right:4px"/>
@@ -31,17 +32,13 @@
           <p class="req-desc">{{ item.desc }}</p>
         </div>
 
-        <!-- 底部按钮 -->
         <div class="card-actions" v-if="item.status === '待接单'">
           <button class="action-btn decline">忽略</button>
-          <!-- 点击触发弹窗 -->
           <button class="action-btn accept" @click="openDetail(item)">立即接单</button>
         </div>
       </div>
     </div>
 
-    <!-- 详情弹窗 (Modal) -->
-    <!-- 使用 Teleport 确保弹窗覆盖全屏，包括 TabBar -->
     <Teleport to="body">
       <div class="modal-overlay" v-if="showModal" @click.self="closeDetail">
         <div class="modal-card">
@@ -50,18 +47,18 @@
             <X :size="24" color="#999" @click="closeDetail" style="cursor:pointer"/>
           </div>
 
-          <!-- 用户基础信息 -->
           <div class="detail-user">
-            <div class="avatar-large" :style="{ background: currentOrder.bg }">
-              {{ currentOrder.name ? currentOrder.name[0] : '' }}
-            </div>
+            <img 
+              :src="`https://api.dicebear.com/7.x/notionists/svg?seed=${currentOrder.name}`" 
+              class="avatar-large-img" 
+              :style="{ background: currentOrder.bg }"
+            />
             <div>
               <div class="d-name">{{ currentOrder.name }}</div>
               <div class="d-type">{{ currentOrder.type }}</div>
             </div>
           </div>
 
-          <!-- 身体参数网格 -->
           <div class="param-box">
             <h4>身体档案</h4>
             <div class="param-grid" v-if="currentOrder.bodyData">
@@ -84,13 +81,11 @@
             </div>
           </div>
 
-          <!-- 详细需求描述 -->
           <div class="desc-box">
             <h4>具体诉求</h4>
             <p>{{ currentOrder.fullDesc }}</p>
           </div>
 
-          <!-- 底部确认操作 -->
           <div class="modal-actions">
             <button class="cancel-btn" @click="closeDetail">再想想</button>
             <button class="confirm-btn" @click="confirmOrder">确认接单</button>
@@ -98,7 +93,6 @@
         </div>
       </div>
     </Teleport>
-
   </div>
 </template>
 
@@ -109,7 +103,6 @@ import { ref } from 'vue'
 const showModal = ref(false)
 const currentOrder = ref({})
 
-// 模拟数据
 const orders = ref([
   { 
     id: 1, 
@@ -141,23 +134,31 @@ const orders = ref([
     type: '周一例会', 
     status: '已接单',
     desc: '老板比较严肃，想要职业又不老气的搭配。',
-    fullDesc: '略...',
+    fullDesc: '目前公司氛围较为保守，需要体现专业度，但不想穿得像传统业务员。',
     bodyData: { height: '158cm', weight: '50kg', shape: '苹果型', skin: '白皙' }
   },
+  { 
+    id: 4, 
+    name: '健身达人', 
+    bg: '#bbdefb', 
+    time: '3小时前', 
+    type: '运动时尚感', 
+    status: '待接单',
+    desc: '想穿出那种不经意的运动风。',
+    fullDesc: '下周有个户外的飞盘活动，想穿得专业又好拍。',
+    bodyData: { height: '172cm', weight: '55kg', shape: '倒三角', skin: '健康色' }
+  }
 ])
 
-// 打开弹窗
 const openDetail = (item) => {
   currentOrder.value = item
   showModal.value = true
 }
 
-// 关闭弹窗
 const closeDetail = () => {
   showModal.value = false
 }
 
-// 确认接单
 const confirmOrder = () => {
   const index = orders.value.findIndex(o => o.id === currentOrder.value.id)
   if (index !== -1) {
@@ -168,91 +169,96 @@ const confirmOrder = () => {
 </script>
 
 <style scoped>
+/* 核心修复：移除 fixed，确保页面高度随内容增长 */
 .page-container {
-  padding: 20px;
+  width: 100%;
+  min-height: 100vh; 
   background-color: #fafafa;
-  /* ⚠️ 关键修改：删除了 min-height: 100vh; */
-  /* 让它自动适应 Flex 布局，底部栏就会回来了 */
+  padding: 20px;
+  /* 增加底部内边距，确保内容不被 TabBar 遮挡 */
+  padding-bottom: 120px; 
+  box-sizing: border-box;
+  overflow-y: auto; 
+  -webkit-overflow-scrolling: touch; /* 增强 iOS 滚动流畅度 */
 }
 
 .header { margin-bottom: 20px; }
-.header h2 { font-size: 24px; margin-bottom: 4px; }
-.header p { font-size: 12px; color: #999; letter-spacing: 1px; }
+.header h2 { font-size: 24px; margin-bottom: 4px; font-weight: 800; }
+.header p { font-size: 12px; color: #999; letter-spacing: 1px; text-transform: uppercase; }
 
 /* 列表样式 */
-.order-list { display: flex; flex-direction: column; gap: 20px; padding-bottom: 20px; }
-.order-card { background: #fff; border-radius: 20px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+.order-list { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 20px; 
+}
+.order-card { 
+  background: #fff; 
+  border-radius: 20px; 
+  padding: 20px; 
+  box-shadow: 0 5px 20px rgba(0,0,0,0.03); 
+  border: 1px solid #f0f0f0; 
+}
 
 .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #eee; }
-.user-info { display: flex; align-items: center; gap: 10px; }
-.avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; font-size: 14px; }
-.text { display: flex; flex-direction: column; }
-.name { font-weight: bold; font-size: 14px; }
-.time { font-size: 11px; color: #aaa; }
+.user-info { display: flex; align-items: center; gap: 12px; }
+.avatar-img { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; }
 
-.status-tag { font-size: 11px; background: #fff3e0; color: #f57c00; padding: 4px 8px; border-radius: 10px; font-weight: 600; }
+.text { display: flex; flex-direction: column; }
+.name { font-weight: bold; font-size: 15px; color: #333; }
+.time { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+.status-tag { font-size: 11px; background: #fff3e0; color: #f57c00; padding: 4px 10px; border-radius: 8px; font-weight: 700; }
 .status-tag.done { background: #e8f5e9; color: #2e7d32; }
 
-.req-title { display: flex; align-items: center; font-weight: 600; font-size: 15px; margin-bottom: 8px; color: #333; }
-.req-desc { font-size: 13px; color: #666; line-height: 1.5; margin-bottom: 20px; }
+.req-title { display: flex; align-items: center; font-weight: 700; font-size: 16px; margin-bottom: 8px; color: #1a1a1a; }
+.req-desc { font-size: 13px; color: #777; line-height: 1.5; margin-bottom: 20px; }
 
 .card-actions { display: flex; gap: 10px; }
-.action-btn { flex: 1; padding: 10px 0; border-radius: 12px; font-size: 13px; border: none; font-weight: 600; cursor: pointer; }
+.action-btn { flex: 1; padding: 12px 0; border-radius: 14px; font-size: 14px; border: none; font-weight: 700; cursor: pointer; }
 .decline { background: #f5f5f5; color: #999; }
-.accept { background: #000; color: #fff; transition: opacity 0.2s; }
-.accept:active { opacity: 0.8; }
+.accept { background: #1a1a1a; color: #fff; }
 
-/* --- 弹窗样式 --- */
+/* 弹窗样式 */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(5px);
-  z-index: 9999; /* 确保在最顶层 */
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 30px;
-  box-sizing: border-box;
+  padding: 20px;
 }
-
 .modal-card {
   background: #fff;
   width: 100%;
-  max-width: 340px;
-  border-radius: 24px;
-  padding: 25px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  max-width: 360px;
+  border-radius: 28px;
+  padding: 30px;
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-
 @keyframes popIn {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from { transform: translateY(20px) scale(0.9); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
 }
-
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.modal-header h3 { margin: 0; font-size: 18px; }
-
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.modal-header h3 { margin: 0; font-size: 20px; font-weight: 800; }
 .detail-user { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
-.avatar-large { width: 50px; height: 50px; border-radius: 50%; color: #fff; font-weight: bold; font-size: 20px; display: flex; align-items: center; justify-content: center; }
-.d-name { font-weight: bold; font-size: 16px; }
-.d-type { font-size: 12px; color: #666; background: #f5f5f5; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; }
-
-.param-box { background: #f9f9f9; border-radius: 16px; padding: 15px; margin-bottom: 20px; }
-.param-box h4, .desc-box h4 { margin: 0 0 10px 0; font-size: 14px; color: #333; }
-.param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.avatar-large-img { width: 56px; height: 56px; border-radius: 16px; object-fit: cover; }
+.d-name { font-weight: 800; font-size: 18px; color: #1a1a1a; }
+.d-type { font-size: 12px; color: #f57c00; background: #fff3e0; padding: 3px 8px; border-radius: 6px; display: inline-block; margin-top: 5px; font-weight: 600; }
+.param-box { background: #f8f8f8; border-radius: 20px; padding: 18px; margin-bottom: 20px; border: 1px solid #f0f0f0; }
+.param-box h4 { margin: 0 0 12px 0; font-size: 14px; color: #1a1a1a; font-weight: 700; }
+.param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .p-item { display: flex; flex-direction: column; }
-.label { font-size: 11px; color: #999; }
-.val { font-size: 14px; font-weight: 600; color: #333; }
-
+.label { font-size: 11px; color: #999; margin-bottom: 2px; }
+.val { font-size: 14px; font-weight: 700; color: #333; }
 .desc-box { margin-bottom: 30px; }
-.desc-box p { font-size: 13px; color: #666; line-height: 1.6; margin: 0; text-align: justify; }
-
-.modal-actions { display: flex; gap: 15px; }
-.cancel-btn { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #ddd; background: #fff; color: #666; font-weight: 600; cursor: pointer; }
-.confirm-btn { flex: 1.5; padding: 12px; border-radius: 12px; border: none; background: #a7ffeb; color: #00695c; font-weight: 600; cursor: pointer; }
+.desc-box h4 { margin: 0 0 12px 0; font-size: 14px; font-weight: 700; }
+.desc-box p { font-size: 14px; color: #555; line-height: 1.6; margin: 0; }
+.modal-actions { display: flex; gap: 12px; }
+.cancel-btn { flex: 1; padding: 14px; border-radius: 16px; border: 1px solid #eee; background: #fff; color: #666; font-weight: 700; }
+.confirm-btn { flex: 2; padding: 14px; border-radius: 16px; border: none; background: #a7ffeb; color: #00695c; font-weight: 700; }
 </style>
