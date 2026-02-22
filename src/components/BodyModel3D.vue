@@ -42,17 +42,22 @@ watch(() => props.params, () => {
 }, { deep: true })
 
 const initThree = () => {
+  if (!container.value) return
   const width = container.value.clientWidth
   const height = container.value.clientHeight
   
   scene = new THREE.Scene()
   scene.background = new THREE.Color(0xffffff)
 
-  // 增大远裁剪面到 10000，防止巨型模型被裁剪
   camera = new THREE.PerspectiveCamera(45, width / height, 0.01, 10000)
   camera.position.set(0, 1.2, 3.5)
 
-  renderer = new THREE.WebGLRenderer({ canvas: canvasRef.value, antialias: true, alpha: true })
+  renderer = new THREE.WebGLRenderer({ 
+    canvas: canvasRef.value, 
+    antialias: true, 
+    alpha: true,
+    preserveDrawingBuffer: true // 增加兼容性
+  })
   renderer.setSize(width, height)
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
@@ -70,7 +75,7 @@ const initThree = () => {
 const loadModel = () => {
   loading.value = true
   const isMale = props.gender === 'male'
-  loadingText.value = `正在强制校准${isMale ? '男性' : '女性'}模型...`
+  loadingText.value = `正在连接${isMale ? '男性' : '女性'}模型组件...`
 
   if (humanModel) {
     scene.remove(humanModel)
@@ -83,45 +88,39 @@ const loadModel = () => {
     humanModel = null
   }
 
+  // 1. 路径处理：强制使用相对路径
   const fileName = isMale ? 'human_male.glb' : 'human_base.glb'
-  const modelUrl = `./${fileName}`
+  const modelUrl = './' + fileName
 
+  // 2. 核心修复：强制使用 FileLoader (XMLHttpRequest) 替代 Fetch
+  // 解决手机端 file:/// 协议不支持 fetch 的问题
   const loader = new GLTFLoader()
+  const fileLoader = new THREE.FileLoader()
+  fileLoader.setResponseType('arraybuffer')
+  loader.setFileLoader(fileLoader)
+
   loader.load(modelUrl, (gltf) => {
     humanModel = gltf.scene
 
-    // --- 暴力对齐逻辑开始 ---
-    
-    // 1. 彻底清除模型可能自带的非法位移和缩放
+    // --- 暴力对齐逻辑 ---
     humanModel.updateMatrixWorld(true)
-    
-    // 2. 计算模型当前的真实大小
     const box = new THREE.Box3().setFromObject(humanModel)
     const size = box.getSize(new THREE.Vector3())
-    const center = box.getCenter(new THREE.Vector3())
 
     if (isMale) {
-      // 男性模型逻辑：强行“纠偏”
-      // A. 计算缩放比例：无论原始是多小，都强制缩放到高度为 1.8个单位
       const targetH = 1.8
       const s = targetH / (size.y || 1)
       humanModel.scale.set(s, s, s)
-
-      // B. 重新计算缩放后的中心
       const newBox = new THREE.Box3().setFromObject(humanModel)
       const newCenter = newBox.getCenter(new THREE.Vector3())
-      
-      // C. 强制挪回世界中心 (0,0,0)
       humanModel.position.x = -newCenter.x
       humanModel.position.z = -newCenter.z
-      humanModel.position.y = -newBox.min.y // 脚底踩地
+      humanModel.position.y = -newBox.min.y 
     } else {
-      // 女性模型逻辑：保持原有坐标系
       humanModel.position.set(0, 0, 0)
       humanModel.scale.set(1, 1, 1)
     }
 
-    // 3. 材质统一处理
     humanModel.traverse(child => {
       if (child.isMesh) {
         child.material = new THREE.MeshStandardMaterial({ 
@@ -133,24 +132,27 @@ const loadModel = () => {
 
     scene.add(humanModel)
 
-    // 4. 控制器中心强制校准
-    // 无论模型在哪，让相机盯着模型的高度一半位置
     const finalBox = new THREE.Box3().setFromObject(humanModel)
     const finalSize = finalBox.getSize(new THREE.Vector3())
     const targetY = finalSize.y / 2
 
     controls.target.set(0, targetY, 0)
-    camera.position.set(0, targetY, 3.5) // 相机离模型 3.5个单位远
+    camera.position.set(0, targetY, 3.5)
     controls.update()
 
     loading.value = false
     updateBodyShape()
     animate()
   }, 
-  (xhr) => { /* 进度控制 */ },
+  (xhr) => {
+    if (xhr.total > 0) {
+      const percent = Math.round((xhr.loaded / xhr.total) * 100)
+      loadingText.value = `加载进度: ${percent}%`
+    }
+  },
   (error) => {
-    console.error('加载失败', error)
-    loadingText.value = "模型加载失败"
+    console.error('[3D加载错误]', error)
+    loadingText.value = "模型初始化失败，请检查资源路径"
   })
 }
 
@@ -163,48 +165,95 @@ const updateBodyShape = () => {
     : { h: 165, b: 85, w: 60, hip: 90 }
 
   const p = props.params
-  
-  // 计算相对于基准的形变比例
   const hScale = p.height / BASE.h
   const wScale = (p.bust / BASE.b + p.hips / BASE.hip) / 2
   const dScale = p.waist / BASE.w
 
-  // 重点：我们在 loadModel 设置的基础缩放之上进行身材微调
-  // 这种方式不会破坏 loadModel 建立的“归一化”尺寸
-  const meshGroup = humanModel 
-  
-  // 这里我们只调整局部缩放，不触碰 position
-  // 注意：如果是男性，因为之前已经 scale 过了，这里需要叠加
   if (isMale) {
-    // 这种微调能保证身材随滑块变动
-    meshGroup.scale.x *= wScale
-    meshGroup.scale.y *= hScale
-    meshGroup.scale.z *= dScale
+    // 男性模型在基础缩放之上微调
+    const targetH = 1.8
+    const box = new THREE.Box3().setFromObject(humanModel)
+    const currentSize = box.getSize(new THREE.Vector3())
+    // 保持基础比例，进行身材微调
+    humanModel.scale.x = (targetH / (currentSize.y/humanModel.scale.y)) * wScale
+    humanModel.scale.y = (targetH / (currentSize.y/humanModel.scale.y)) * hScale
+    humanModel.scale.z = (targetH / (currentSize.y/humanModel.scale.y)) * dScale
   } else {
-    meshGroup.scale.set(wScale, hScale, dScale)
+    humanModel.scale.set(wScale, hScale, dScale)
   }
 }
 
 const animate = () => {
   animationId = requestAnimationFrame(animate)
   if (controls) controls.update()
-  renderer.render(scene, camera)
+  if (renderer && scene && camera) {
+    renderer.render(scene, camera)
+  }
 }
 
-onMounted(() => initThree())
+onMounted(() => {
+  initThree()
+  window.addEventListener('resize', onWindowResize)
+})
+
+const onWindowResize = () => {
+  if (!container.value || !camera || !renderer) return
+  const width = container.value.clientWidth
+  const height = container.value.clientHeight
+  camera.aspect = width / height
+  camera.updateProjectionMatrix()
+  renderer.setSize(width, height)
+}
+
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', onWindowResize)
   cancelAnimationFrame(animationId)
-  if (renderer) renderer.dispose()
+  if (renderer) {
+    renderer.dispose()
+    renderer.forceContextLoss()
+  }
 })
 </script>
 
 <style scoped>
-.model-container { width: 100%; height: 400px; position: relative; background: #fff; overflow: hidden; }
-.loading-mask { position: absolute; inset: 0; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
-.spinner { width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top-color: #ff4081; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px; }
+.model-container { 
+  width: 100%; 
+  height: 400px; 
+  position: relative; 
+  background: #ffffff; 
+  overflow: hidden; 
+  border-radius: 12px;
+}
+.loading-mask { 
+  position: absolute; 
+  inset: 0; 
+  background: rgba(255,255,255,0.9); 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 10; 
+}
+.spinner { 
+  width: 30px; 
+  height: 30px; 
+  border: 3px solid #f3f3f3; 
+  border-top-color: #ff4081; 
+  border-radius: 50%; 
+  animation: spin 1s linear infinite; 
+  margin-bottom: 10px; 
+}
 @keyframes spin { to { transform: rotate(360deg); } }
 .data-overlay { position: absolute; inset: 0; pointer-events: none; }
-.tag { position: absolute; background: rgba(255, 64, 129, 0.1); padding: 4px 10px; border-radius: 12px; font-size: 10px; color: #ff4081; border: 1px solid rgba(255, 64, 129, 0.2); }
+.tag { 
+  position: absolute; 
+  background: rgba(255, 64, 129, 0.05); 
+  padding: 4px 10px; 
+  border-radius: 12px; 
+  font-size: 10px; 
+  color: #ff4081; 
+  border: 1px solid rgba(255, 64, 129, 0.2); 
+}
 .top-left { top: 15px; left: 15px; }
 .top-right { top: 15px; right: 15px; }
 </style>
