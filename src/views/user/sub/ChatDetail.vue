@@ -29,14 +29,22 @@
           {{ msg.text }}
         </div>
 
-        <div v-else-if="msg.type === 'service-card'" class="bubble service-card" @click="openServiceModal">
+        <div v-else-if="msg.type === 'service-type-selector'" class="bubble selector-bubble">
+          <p class="selector-hint">请选择您需要的服务类型：</p>
+          <div class="selector-options">
+            <button class="opt-btn" @click="handleTypeSelect('闲置衣物搭配')">1. 闲置衣物搭配</button>
+            <button class="opt-btn" @click="handleTypeSelect('全套搭配定制')">2. 全套搭配定制</button>
+          </div>
+        </div>
+
+        <div v-else-if="msg.type === 'package-entry-card'" class="bubble package-card" @click="openPackageModal">
           <div class="card-header">
             <Settings2 :size="16" color="#ff4081" />
-            <span>系统推荐</span>
+            <span>方案推荐</span>
           </div>
           <div class="card-body">
-            <h4>点击选择服务套餐</h4>
-            <p>为您匹配最合适的搭配咨询方案</p>
+            <h4>请选择您的咨询套餐</h4>
+            <p>点击查看具体的搭配方案与修改次数</p>
           </div>
           <div class="card-footer">立即选择</div>
         </div>
@@ -50,13 +58,13 @@
           v-model="inputText" 
           type="text" 
           placeholder="咨询搭配建议..." 
-          @keyup.enter="handleSendMessage"
+          @keyup.enter="() => handleSendMessage()"
         />
         <Smile :size="22" color="#999" />
       </div>
       <button 
         class="send-btn-action" 
-        @click="handleSendMessage"
+        @click="() => handleSendMessage()"
         :disabled="!inputText.trim()"
       >
         发送
@@ -64,11 +72,11 @@
     </div>
 
     <Teleport to="body">
-      <div class="modal-overlay" v-if="showServiceModal" @click.self="showServiceModal = false">
+      <div class="modal-overlay" v-if="showPackageModal" @click.self="showPackageModal = false">
         <div class="service-modal">
           <div class="modal-header">
             <h3>选择咨询套餐</h3>
-            <p>点击选项进行预览，确认后发送</p>
+            <p>请选择最适合您的方案</p>
           </div>
           
           <div class="options-list">
@@ -93,7 +101,7 @@
           </div>
 
           <div class="modal-footer">
-            <button class="btn-cancel" @click="showServiceModal = false">取消</button>
+            <button class="btn-cancel" @click="showPackageModal = false">取消</button>
             <button 
               class="btn-confirm" 
               :disabled="tempSelectedIndex === null"
@@ -119,15 +127,14 @@ const chatBox = ref(null)
 
 const targetName = ref(route.query.name || '搭配师')
 const inputText = ref('')
-const showServiceModal = ref(false)
-const tempSelectedIndex = ref(null) // 记录弹窗内选中的索引
+const showPackageModal = ref(false)
+const tempSelectedIndex = ref(null)
 
-// 初始消息
 const messages = ref([
-  { id: 1, role: 'other', type: 'text', text: `您好！我是您的私人顾问 ${targetName.value}，请问有什么可以帮您？` }
+  { id: 1, role: 'other', type: 'text', text: `您好！我是您的私人顾问 ${targetName.value}，请问您今天需要哪种搭配服务？` }
 ])
 
-// 套餐策略
+// 你指定的套餐数据
 const pricePackages = [
   { title: '基础入门', desc: '三次搭配一次修改', price: '6.9 起', text: '我想购买：三次搭配一次修改（6.9元）' },
   { title: '进阶超值', desc: '五次搭配二次修改', price: '12.9 起', text: '我想购买：五次搭配二次修改（12.9元）' },
@@ -140,27 +147,42 @@ const scrollToEnd = () => {
   })
 }
 
-const openServiceModal = () => {
-  tempSelectedIndex.value = null // 每次打开重置选择
-  showServiceModal.value = true
+// 第一步：处理类型选择
+const handleTypeSelect = (typeName) => {
+  // 用户回复确认
+  handleSendMessage(`我选择：${typeName}`)
+  
+  // 模拟回复并弹出第二个套餐选择入口
+  setTimeout(() => {
+    messages.value.push({ 
+      id: Date.now() + 1, 
+      role: 'other', 
+      type: 'text', 
+      text: `好的，已为您记录。接下来请选择您需要的具体套餐：` 
+    })
+    messages.value.push({ id: Date.now() + 2, role: 'other', type: 'package-entry-card' })
+    scrollToEnd()
+  }, 800)
 }
 
-// 确认最终选择
+const openPackageModal = () => {
+  tempSelectedIndex.value = null
+  showPackageModal.value = true
+}
+
 const confirmFinalSelection = () => {
   if (tempSelectedIndex.value === null) return
   const pkg = pricePackages[tempSelectedIndex.value]
-  showServiceModal.value = false
+  showPackageModal.value = false
   
-  // 1. 用户自动发送选择
   handleSendMessage(pkg.text)
   
-  // 2. 模拟顾问回复
   setTimeout(() => {
     messages.value.push({
-      id: Date.now() + 2,
+      id: Date.now() + 3,
       role: 'other',
       type: 'text',
-      text: `收到！已为您锁定套餐。请点击首页“身材资料”上传您的最新全身照，我将为您开始量身设计。`
+      text: `收到！已为您锁定该套餐。请点击首页“身材资料”上传信息，我将为您开始量身设计。`
     })
     scrollToEnd()
   }, 1000)
@@ -182,30 +204,24 @@ const handleSendMessage = (customText = null) => {
 
 onMounted(() => {
   scrollToEnd()
-  // 1秒后自动弹出推荐卡片
   setTimeout(() => {
-    messages.value.push({ id: Date.now(), role: 'other', type: 'service-card' })
+    messages.value.push({ id: Date.now(), role: 'other', type: 'service-type-selector' })
     scrollToEnd()
-  }, 1000)
+  }, 800)
 })
 </script>
 
 <style scoped>
-/* 页面基础布局 */
 .chat-detail-page { display: flex; flex-direction: column; height: 100vh; background: #f8f8f8; position: fixed; inset: 0; z-index: 1000; }
-
-/* 导航栏 */
 .nav-bar { height: 54px; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; border-bottom: 1px solid #eee; flex-shrink: 0; }
 .chat-title { text-align: center; }
 .main-name { font-size: 16px; font-weight: 700; display: block; }
 .status { font-size: 10px; color: #ff4081; display: flex; align-items: center; justify-content: center; gap: 3px; }
 .online-dot { width: 6px; height: 6px; background: #ff4081; border-radius: 50%; }
 
-/* 聊天内容区 */
 .chat-content { flex: 1; overflow-y: auto; padding: 20px 15px; display: flex; flex-direction: column; gap: 20px; }
 .time-divider { text-align: center; color: #ccc; font-size: 12px; }
 
-/* 气泡通用 */
 .message-row { display: flex; gap: 10px; max-width: 85%; }
 .message-row.is-other { align-self: flex-start; }
 .message-row.is-me { align-self: flex-end; flex-direction: row-reverse; }
@@ -218,50 +234,44 @@ onMounted(() => {
 .is-other .bubble { background: #fff; color: #333; border-top-left-radius: 2px; }
 .is-me .bubble { background: #ff4081; color: #fff; border-top-right-radius: 2px; }
 
-/* 系统推荐卡片样式 */
-.service-card { cursor: pointer; border: 1px solid #ffecf2 !important; width: 220px; padding: 0 !important; overflow: hidden; background: #fff !important; }
-.card-header { background: #fff5f8; padding: 8px 12px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: #ff4081; font-weight: 600; border-bottom: 1px solid #ffecf2; }
-.card-body { padding: 12px; }
-.card-body h4 { margin: 0; font-size: 15px; color: #333; }
-.card-body p { margin: 4px 0 0; font-size: 12px; color: #999; }
-.card-footer { border-top: 1px solid #f5f5f5; padding: 8px; text-align: center; color: #ff4081; font-size: 13px; font-weight: 600; }
+/* 第一步选择器 */
+.selector-bubble { background: #fff !important; width: 220px; }
+.selector-hint { font-size: 13px; color: #666; margin-bottom: 10px; }
+.selector-options { display: flex; flex-direction: column; gap: 8px; }
+.opt-btn { background: #fdfdfd; border: 1px solid #eee; padding: 10px; border-radius: 8px; font-size: 14px; text-align: left; transition: 0.2s; }
+.opt-btn:active { background: #fff5f8; border-color: #ff4081; }
 
-/* 底部输入框 */
+/* 第三步推荐卡片 */
+.package-card { cursor: pointer; border: 1px solid #ffecf2 !important; width: 220px; padding: 0 !important; overflow: hidden; background: #fff !important; }
+.card-header { background: #fff5f8; padding: 8px 12px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: #ff4081; border-bottom: 1px solid #ffecf2; }
+.card-body { padding: 12px; }
+.card-body h4 { margin: 0; font-size: 14px; color: #333; }
+.card-body p { margin: 4px 0 0; font-size: 11px; color: #999; }
+.card-footer { border-top: 1px solid #f5f5f5; padding: 8px; text-align: center; color: #ff4081; font-size: 12px; font-weight: 600; }
+
 .footer-input-bar { background: #fff; border-top: 1px solid #eee; padding: 10px 12px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .input-wrapper { flex: 1; background: #f2f2f2; border-radius: 20px; display: flex; align-items: center; padding: 0 12px; gap: 8px; }
 .input-wrapper input { flex: 1; height: 38px; border: none; background: transparent; outline: none; font-size: 14px; }
 .send-btn-action { background: #ff4081; color: #fff; border: none; padding: 8px 16px; border-radius: 18px; font-size: 14px; font-weight: 600; }
 
-/* 弹窗 Overlay */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; z-index: 2001; }
 .service-modal { background: #fff; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; animation: slideUp 0.3s ease-out; }
 .modal-header { text-align: center; margin-bottom: 20px; }
-.modal-header h3 { margin: 0; font-size: 17px; }
+.modal-header h3 { font-size: 17px; margin: 0; }
 .modal-header p { font-size: 12px; color: #999; margin-top: 4px; }
 
-/* 套餐列表及选中态 */
 .options-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; }
-.option-item { 
-  background: #f9f9f9; padding: 15px; border-radius: 12px; 
-  display: flex; justify-content: space-between; align-items: center; 
-  border: 2px solid transparent; transition: 0.2s; position: relative;
-}
+.option-item { background: #f9f9f9; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 2px solid transparent; position: relative; }
 .option-item.is-selected { background: #fff; border-color: #ff4081; }
 .opt-main { display: flex; flex-direction: column; gap: 2px; }
 .opt-title { font-size: 15px; font-weight: 700; color: #333; }
 .opt-desc { font-size: 11px; color: #666; }
 .opt-price { color: #ff4081; font-size: 19px; font-weight: 800; }
-.select-check { 
-  position: absolute; top: -6px; right: -6px; background: #ff4081; 
-  width: 18px; height: 18px; border-radius: 50%; display: flex; 
-  align-items: center; justify-content: center; border: 2px solid #fff; 
-}
+.select-check { position: absolute; top: -6px; right: -6px; background: #ff4081; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
 
-/* 弹窗底部按钮 */
 .modal-footer { display: flex; gap: 10px; }
 .btn-cancel { flex: 1; padding: 14px; border-radius: 25px; border: none; background: #f5f5f5; color: #666; font-weight: 600; }
-.btn-confirm { flex: 2; padding: 14px; border-radius: 25px; border: none; background: #1a1a1a; color: #e0c080; font-weight: 700; }
-.btn-confirm:disabled { opacity: 0.3; }
+.btn-confirm { flex: 2; padding: 14px; border-radius: 25px; border: none; background: #1a1a1a; color: #ffca28; font-weight: 700; }
 
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 </style>

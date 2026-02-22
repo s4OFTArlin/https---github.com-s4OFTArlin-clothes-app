@@ -23,6 +23,17 @@
 
     <div class="content-scroll">
       <div class="waterfall-container">
+        
+        <div class="post-card recycle-promo-card" @click="goToRecyclePromo">
+          <div class="promo-content">
+            <div class="promo-icon">♻️</div>
+            <h3 class="promo-title">旧衣物回收</h3>
+            <p class="promo-desc">让时尚循环，给地球减负</p>
+            <div class="promo-action">了解详情 ></div>
+          </div>
+          <div class="promo-tag">推广</div>
+        </div>
+
         <div 
           class="post-card" 
           v-for="(post, index) in posts" 
@@ -44,6 +55,7 @@
             </div>
           </div>
         </div>
+
       </div>
       <div class="bottom-spacing"></div>
     </div>
@@ -59,7 +71,6 @@ const router = useRouter()
 const currentTab = ref('全部')
 const tabs = ['全部', '甜美风', '多巴胺', '极简主义', '美式复古', '新中式']
 
-// 替换为更稳定的头像占位源
 const posts = [
   { 
     img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&q=80&w=500', 
@@ -104,6 +115,12 @@ const goToDetail = (post) => {
     path: '/user/post/1',
     query: { img: post.img, title: post.title, user: post.user, avatar: post.avatar }
   })
+}
+
+// --- 关键修改点：跳转路径与 index.js 中的子路由匹配 ---
+const goToRecyclePromo = () => {
+  // 修改为相对于 /user 的正确路径，或者使用完整的绝对路径
+  router.push('/user/recycle-promo')
 }
 </script>
 
@@ -190,6 +207,59 @@ const goToDetail = (post) => {
   box-shadow: 0 4px 12px rgba(0,0,0,0.03);
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+.recycle-promo-card {
+  background: linear-gradient(135deg, #43a047 0%, #a5d6a7 100%);
+  min-height: 180px;
+  padding: 20px 15px;
+  color: white;
+  cursor: pointer;
+}
+
+.promo-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.promo-icon {
+  font-size: 30px;
+  margin-bottom: 10px;
+}
+
+.promo-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.promo-desc {
+  font-size: 12px;
+  opacity: 0.9;
+  line-height: 1.4;
+  margin-bottom: 15px;
+}
+
+.promo-action {
+  font-size: 11px;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 10px;
+  border-radius: 10px;
+  align-self: flex-start;
+}
+
+.promo-tag {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.1);
+  color: #f0f0f0;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-top-right-radius: 10px;
 }
 
 .post-img {

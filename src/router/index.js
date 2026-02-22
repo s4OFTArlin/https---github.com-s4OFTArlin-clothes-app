@@ -1,19 +1,15 @@
-// 1. 修改 import 导入，增加 Hash 支持
-import { createRouter, createWebHashHistory } from 'vue-router' 
+import { createRouter, createWebHashHistory } from 'vue-router'
 import Login from '../views/Login.vue'
 
 const router = createRouter({
-  // 2. 修改这里：把 createWebHistory 改为 createWebHashHistory
-  // 记得删掉里面的 BASE_URL，Hash 模式通常不需要它
-  history: createWebHashHistory(), 
-  
+  // 使用 Hash 模式
+  history: createWebHashHistory(),
   routes: [
     {
       path: '/',
       name: 'RoleSelect',
       component: Login
     },
-    // ... 下面其他的路由配置保持不变 ...
     {
       path: '/login',
       name: 'SignIn',
@@ -40,6 +36,15 @@ const router = createRouter({
         { path: 'mall', component: () => import('../views/user/Mall.vue') },
         { path: 'message', component: () => import('../views/user/Message.vue') },
         { path: 'mine', component: () => import('../views/user/Mine.vue') },
+        
+        // --- 修正后的路径 ---
+        { 
+          path: 'recycle-promo', 
+          name: 'RecyclePromo',
+          // 这里确保指向你实际创建的 src/views/user/ 目录
+          component: () => import('../views/user/RecyclePromo.vue') 
+        },
+
         { path: 'mall/service', component: () => import('../views/user/sub/CustomerService.vue') },
         { path: 'message/chat', component: () => import('../views/user/sub/ChatDetail.vue') },
         { path: 'post/:id', component: () => import('../views/user/sub/PostDetail.vue') },
