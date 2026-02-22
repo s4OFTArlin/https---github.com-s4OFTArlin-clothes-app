@@ -33,13 +33,8 @@ const loadingText = ref('加载中...')
 let scene, camera, renderer, controls, animationId
 let humanModel = null 
 
-watch(() => props.gender, () => {
-  loadModel() 
-})
-
-watch(() => props.params, () => {
-  updateBodyShape()
-}, { deep: true })
+watch(() => props.gender, () => { loadModel() })
+watch(() => props.params, () => { updateBodyShape() }, { deep: true })
 
 const initThree = () => {
   if (!container.value) return
@@ -72,38 +67,40 @@ const initThree = () => {
   loadModel()
 }
 
+// 核心：用最原始的 XHR 强制读取本地文件，避开 Fetch API 报错
+const manualLoad = (url, onSuccess, onError) => {
+  const xhr = new XMLHttpRequest()
+  xhr.open('GET', url, true)
+  xhr.responseType = 'arraybuffer'
+  xhr.onload = function() {
+    if (this.status === 200 || this.status === 0) {
+      onSuccess(this.response)
+    } else {
+      onError('File not found')
+    }
+  }
+  xhr.onerror = onError
+  xhr.send()
+}
+
 const loadModel = () => {
   loading.value = true
   const isMale = props.gender === 'male'
-  loadingText.value = `正在连接${isMale ? '男性' : '女性'}模型...`
-
-  if (humanModel) {
-    scene.remove(humanModel)
-    humanModel.traverse(child => {
-      if (child.isMesh) {
-        child.geometry.dispose()
-        child.material.dispose()
-      }
-    })
-    humanModel = null
-  }
-
   const fileName = isMale ? 'human_male.glb' : 'human_base.glb'
   const modelUrl = './' + fileName
 
-  /**
-   * 修复方案：直接使用 FileLoader 读取 ArrayBuffer
-   * 这种方式在 HBuilder/手机端 file 协议下最稳定
-   */
-  const fileLoader = new THREE.FileLoader()
-  fileLoader.setResponseType('arraybuffer')
-  
-  fileLoader.load(modelUrl, (buffer) => {
-    const gltfLoader = new GLTFLoader()
-    gltfLoader.parse(buffer, '', (gltf) => {
+  if (humanModel) {
+    scene.remove(humanModel)
+    humanModel = null
+  }
+
+  // 调用 XHR 加载
+  manualLoad(modelUrl, (buffer) => {
+    const loader = new GLTFLoader()
+    loader.parse(buffer, '', (gltf) => {
       humanModel = gltf.scene
 
-      // 暴力对齐逻辑
+      // --- 暴力对齐逻辑 (保留你最初的所有逻辑) ---
       humanModel.updateMatrixWorld(true)
       const box = new THREE.Box3().setFromObject(humanModel)
       const size = box.getSize(new THREE.Vector3())
@@ -132,7 +129,6 @@ const loadModel = () => {
       })
 
       scene.add(humanModel)
-
       const finalBox = new THREE.Box3().setFromObject(humanModel)
       const targetY = finalBox.getSize(new THREE.Vector3()).y / 2
       controls.target.set(0, targetY, 0)
@@ -143,18 +139,10 @@ const loadModel = () => {
       updateBodyShape()
       animate()
     }, (err) => {
-      console.error('GLTF 解析失败', err)
-      loadingText.value = "模型解析错误"
+      loadingText.value = "模型解析失败"
     })
-  }, 
-  (xhr) => {
-    if (xhr.total > 0) {
-      loadingText.value = `加载进度: ${Math.round((xhr.loaded / xhr.total) * 100)}%`
-    }
-  },
-  (error) => {
-    console.error('文件读取失败', error)
-    loadingText.value = "模型加载失败"
+  }, (err) => {
+    loadingText.value = "模型文件读取失败"
   })
 }
 
@@ -183,9 +171,7 @@ const animate = () => {
   if (renderer && scene && camera) renderer.render(scene, camera)
 }
 
-onMounted(() => {
-  initThree()
-})
+onMounted(() => { initThree() })
 
 onBeforeUnmount(() => {
   cancelAnimationFrame(animationId)
